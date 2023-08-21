@@ -1,27 +1,172 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "sqlserver"
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int       @default(autoincrement()) @id
-  email     String    @unique
-  name      String?
-  posts     Post[]
+model Address {
+  AddressID                                                  Int                @id(map: "PK_Address_AddressID") @default(autoincrement())
+  AddressLine1                                               String             @db.NVarChar(60)
+  AddressLine2                                               String?            @db.NVarChar(60)
+  City                                                       String             @db.NVarChar(30)
+  StateProvince                                              String             @db.NVarChar(50)
+  CountryRegion                                              String             @db.NVarChar(50)
+  PostalCode                                                 String             @db.NVarChar(15)
+  rowguid                                                    String             @unique(map: "AK_Address_rowguid") @default(dbgenerated("newid()"), map: "DF_Address_rowguid") @db.UniqueIdentifier
+  ModifiedDate                                               DateTime           @default(now(), map: "DF_Address_ModifiedDate") @db.DateTime
+  CustomerAddress                                            CustomerAddress[]
+  SalesOrderHeader_SalesOrderHeader_BillToAddressIDToAddress SalesOrderHeader[] @relation("SalesOrderHeader_BillToAddressIDToAddress")
+  SalesOrderHeader_SalesOrderHeader_ShipToAddressIDToAddress SalesOrderHeader[] @relation("SalesOrderHeader_ShipToAddressIDToAddress")
+
+  @@index([AddressLine1, AddressLine2, City, StateProvince, PostalCode, CountryRegion], map: "IX_Address_AddressLine1_AddressLine2_City_StateProvince_PostalCode_CountryRegion")
+  @@index([StateProvince], map: "IX_Address_StateProvince")
 }
 
-model Post {
-  id        Int       @default(autoincrement()) @id
-  title     String
-  content   String?
-  published Boolean?  @default(false)
-  author    User?     @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model Customer {
+  CustomerID       Int                @id(map: "PK_Customer_CustomerID") @default(autoincrement())
+  NameStyle        Boolean            @default(false, map: "DF_Customer_NameStyle")
+  Title            String?            @db.NVarChar(8)
+  FirstName        String             @db.NVarChar(50)
+  MiddleName       String?            @db.NVarChar(50)
+  LastName         String             @db.NVarChar(50)
+  Suffix           String?            @db.NVarChar(10)
+  CompanyName      String?            @db.NVarChar(128)
+  SalesPerson      String?            @db.NVarChar(256)
+  EmailAddress     String?            @db.NVarChar(50)
+  Phone            String?            @db.NVarChar(25)
+  PasswordHash     String             @db.VarChar(128)
+  PasswordSalt     String             @db.VarChar(10)
+  rowguid          String             @unique(map: "AK_Customer_rowguid") @default(dbgenerated("newid()"), map: "DF_Customer_rowguid") @db.UniqueIdentifier
+  ModifiedDate     DateTime           @default(now(), map: "DF_Customer_ModifiedDate") @db.DateTime
+  CustomerAddress  CustomerAddress[]
+  SalesOrderHeader SalesOrderHeader[]
+
+  @@index([EmailAddress], map: "IX_Customer_EmailAddress")
+}
+
+model CustomerAddress {
+  CustomerID   Int
+  AddressID    Int
+  AddressType  String   @db.NVarChar(50)
+  rowguid      String   @unique(map: "AK_CustomerAddress_rowguid") @default(dbgenerated("newid()"), map: "DF_CustomerAddress_rowguid") @db.UniqueIdentifier
+  ModifiedDate DateTime @default(now(), map: "DF_CustomerAddress_ModifiedDate") @db.DateTime
+  Address      Address  @relation(fields: [AddressID], references: [AddressID], onUpdate: NoAction, map: "FK_CustomerAddress_Address_AddressID")
+  Customer     Customer @relation(fields: [CustomerID], references: [CustomerID], onUpdate: NoAction, map: "FK_CustomerAddress_Customer_CustomerID")
+
+  @@id([CustomerID, AddressID], map: "PK_CustomerAddress_CustomerID_AddressID")
+}
+
+model Product {
+  ProductID              Int                @id(map: "PK_Product_ProductID") @default(autoincrement())
+  Name                   String             @unique(map: "AK_Product_Name") @db.NVarChar(50)
+  ProductNumber          String             @unique(map: "AK_Product_ProductNumber") @db.NVarChar(25)
+  Color                  String?            @db.NVarChar(15)
+  StandardCost           Float              @db.Money
+  ListPrice              Float              @db.Money
+  Size                   String?            @db.NVarChar(5)
+  Weight                 Decimal?           @db.Decimal(8, 2)
+  ProductCategoryID      Int?
+  ProductModelID         Int?
+  SellStartDate          DateTime           @db.DateTime
+  SellEndDate            DateTime?          @db.DateTime
+  DiscontinuedDate       DateTime?          @db.DateTime
+  ThumbNailPhoto         Bytes?
+  ThumbnailPhotoFileName String?            @db.NVarChar(50)
+  rowguid                String             @unique(map: "AK_Product_rowguid") @default(dbgenerated("newid()"), map: "DF_Product_rowguid") @db.UniqueIdentifier
+  ModifiedDate           DateTime           @default(now(), map: "DF_Product_ModifiedDate") @db.DateTime
+  ProductCategory        ProductCategory?   @relation(fields: [ProductCategoryID], references: [ProductCategoryID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Product_ProductCategory_ProductCategoryID")
+  ProductModel           ProductModel?      @relation(fields: [ProductModelID], references: [ProductModelID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Product_ProductModel_ProductModelID")
+  SalesOrderDetail       SalesOrderDetail[]
+}
+
+model ProductCategory {
+  ProductCategoryID       Int               @id(map: "PK_ProductCategory_ProductCategoryID") @default(autoincrement())
+  ParentProductCategoryID Int?
+  Name                    String            @unique(map: "AK_ProductCategory_Name") @db.NVarChar(50)
+  rowguid                 String            @unique(map: "AK_ProductCategory_rowguid") @default(dbgenerated("newid()"), map: "DF_ProductCategory_rowguid") @db.UniqueIdentifier
+  ModifiedDate            DateTime          @default(now(), map: "DF_ProductCategory_ModifiedDate") @db.DateTime
+  Product                 Product[]
+  ProductCategory         ProductCategory?  @relation("ProductCategoryToProductCategory", fields: [ParentProductCategoryID], references: [ProductCategoryID], onDelete: NoAction, onUpdate: NoAction, map: "FK_ProductCategory_ProductCategory_ParentProductCategoryID_ProductCategoryID")
+  other_ProductCategory   ProductCategory[] @relation("ProductCategoryToProductCategory")
+}
+
+model ProductDescription {
+  ProductDescriptionID           Int                              @id(map: "PK_ProductDescription_ProductDescriptionID") @default(autoincrement())
+  Description                    String                           @db.NVarChar(400)
+  rowguid                        String                           @unique(map: "AK_ProductDescription_rowguid") @default(dbgenerated("newid()"), map: "DF_ProductDescription_rowguid") @db.UniqueIdentifier
+  ModifiedDate                   DateTime                         @default(now(), map: "DF_ProductDescription_ModifiedDate") @db.DateTime
+  ProductModelProductDescription ProductModelProductDescription[]
+}
+
+model ProductModel {
+  ProductModelID                 Int                              @id(map: "PK_ProductModel_ProductModelID") @default(autoincrement())
+  Name                           String                           @unique(map: "AK_ProductModel_Name") @db.NVarChar(50)
+  CatalogDescription             String?                          @db.Xml
+  rowguid                        String                           @unique(map: "AK_ProductModel_rowguid") @default(dbgenerated("newid()"), map: "DF_ProductModel_rowguid") @db.UniqueIdentifier
+  ModifiedDate                   DateTime                         @default(now(), map: "DF_ProductModel_ModifiedDate") @db.DateTime
+  Product                        Product[]
+  ProductModelProductDescription ProductModelProductDescription[]
+}
+
+model ProductModelProductDescription {
+  ProductModelID       Int
+  ProductDescriptionID Int
+  Culture              String             @db.NChar(6)
+  rowguid              String             @unique(map: "AK_ProductModelProductDescription_rowguid") @default(dbgenerated("newid()"), map: "DF_ProductModelProductDescription_rowguid") @db.UniqueIdentifier
+  ModifiedDate         DateTime           @default(now(), map: "DF_ProductModelProductDescription_ModifiedDate") @db.DateTime
+  ProductDescription   ProductDescription @relation(fields: [ProductDescriptionID], references: [ProductDescriptionID], onUpdate: NoAction, map: "FK_ProductModelProductDescription_ProductDescription_ProductDescriptionID")
+  ProductModel         ProductModel       @relation(fields: [ProductModelID], references: [ProductModelID], onUpdate: NoAction, map: "FK_ProductModelProductDescription_ProductModel_ProductModelID")
+
+  @@id([ProductModelID, ProductDescriptionID, Culture], map: "PK_ProductModelProductDescription_ProductModelID_ProductDescriptionID_Culture")
+}
+
+model SalesOrderDetail {
+  SalesOrderID       Int
+  SalesOrderDetailID Int              @default(autoincrement())
+  OrderQty           Int              @db.SmallInt
+  ProductID          Int
+  UnitPrice          Float            @db.Money
+  UnitPriceDiscount  Float            @default(0.0, map: "DF_SalesOrderDetail_UnitPriceDiscount") @db.Money
+  LineTotal          Decimal          @db.Decimal(38, 6)
+  rowguid            String           @unique(map: "AK_SalesOrderDetail_rowguid") @default(dbgenerated("newid()"), map: "DF_SalesOrderDetail_rowguid") @db.UniqueIdentifier
+  ModifiedDate       DateTime         @default(now(), map: "DF_SalesOrderDetail_ModifiedDate") @db.DateTime
+  Product            Product          @relation(fields: [ProductID], references: [ProductID], onUpdate: NoAction, map: "FK_SalesOrderDetail_Product_ProductID")
+  SalesOrderHeader   SalesOrderHeader @relation(fields: [SalesOrderID], references: [SalesOrderID], onDelete: Cascade, onUpdate: NoAction, map: "FK_SalesOrderDetail_SalesOrderHeader_SalesOrderID")
+
+  @@id([SalesOrderID, SalesOrderDetailID], map: "PK_SalesOrderDetail_SalesOrderID_SalesOrderDetailID")
+  @@index([ProductID], map: "IX_SalesOrderDetail_ProductID")
+}
+
+model SalesOrderHeader {
+  SalesOrderID                                      Int                @id(map: "PK_SalesOrderHeader_SalesOrderID") @default(autoincrement())
+  RevisionNumber                                    Int                @default(0, map: "DF_SalesOrderHeader_RevisionNumber") @db.TinyInt
+  OrderDate                                         DateTime           @default(now(), map: "DF_SalesOrderHeader_OrderDate") @db.DateTime
+  DueDate                                           DateTime           @db.DateTime
+  ShipDate                                          DateTime?          @db.DateTime
+  Status                                            Int                @default(1, map: "DF_SalesOrderHeader_Status") @db.TinyInt
+  OnlineOrderFlag                                   Boolean            @default(true, map: "DF_SalesOrderHeader_OnlineOrderFlag")
+  SalesOrderNumber                                  String             @unique(map: "AK_SalesOrderHeader_SalesOrderNumber") @db.NVarChar(25)
+  PurchaseOrderNumber                               String?            @db.NVarChar(25)
+  AccountNumber                                     String?            @db.NVarChar(15)
+  CustomerID                                        Int
+  ShipToAddressID                                   Int?
+  BillToAddressID                                   Int?
+  ShipMethod                                        String             @db.NVarChar(50)
+  CreditCardApprovalCode                            String?            @db.VarChar(15)
+  SubTotal                                          Float              @default(0.00, map: "DF_SalesOrderHeader_SubTotal") @db.Money
+  TaxAmt                                            Float              @default(0.00, map: "DF_SalesOrderHeader_TaxAmt") @db.Money
+  Freight                                           Float              @default(0.00, map: "DF_SalesOrderHeader_Freight") @db.Money
+  TotalDue                                          Float              @db.Money
+  Comment                                           String?            @db.NVarChar(Max)
+  rowguid                                           String             @unique(map: "AK_SalesOrderHeader_rowguid") @default(dbgenerated("newid()"), map: "DF_SalesOrderHeader_rowguid") @db.UniqueIdentifier
+  ModifiedDate                                      DateTime           @default(now(), map: "DF_SalesOrderHeader_ModifiedDate") @db.DateTime
+  SalesOrderDetail                                  SalesOrderDetail[]
+  Address_SalesOrderHeader_BillToAddressIDToAddress Address?           @relation("SalesOrderHeader_BillToAddressIDToAddress", fields: [BillToAddressID], references: [AddressID], onDelete: NoAction, onUpdate: NoAction, map: "FK_SalesOrderHeader_Address_BillTo_AddressID")
+  Address_SalesOrderHeader_ShipToAddressIDToAddress Address?           @relation("SalesOrderHeader_ShipToAddressIDToAddress", fields: [ShipToAddressID], references: [AddressID], onDelete: NoAction, onUpdate: NoAction, map: "FK_SalesOrderHeader_Address_ShipTo_AddressID")
+  Customer                                          Customer           @relation(fields: [CustomerID], references: [CustomerID], onUpdate: NoAction, map: "FK_SalesOrderHeader_Customer_CustomerID")
+
+  @@index([CustomerID], map: "IX_SalesOrderHeader_CustomerID")
 }
