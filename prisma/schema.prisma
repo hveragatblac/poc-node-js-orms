@@ -173,7 +173,7 @@ model SalesOrderHeader {
 
 model Amalgamation {
   id Int @id @default(autoincrement())
-  name String @db.VarChar(255)
+  name String @unique(map: "AK_Amalgamation_name") @db.VarChar(255)
 
   // Exact numerics
   fBigint BigInt @db.BigInt()
@@ -209,9 +209,9 @@ model Amalgamation {
   fNText String @db.NText()
 
   // Binary strings
-  fBinary Bytes @db.Binary()
+  fBinary Bytes @db.Binary(8)
   fImage Bytes @db.Image()
-  fVarbinary Bytes @db.VarBinary()
+  fVarbinary Bytes @db.VarBinary(8)
 
   // Spatial geometry types
   // Spatial geography types
