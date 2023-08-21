@@ -170,3 +170,61 @@ model SalesOrderHeader {
 
   @@index([CustomerID], map: "IX_SalesOrderHeader_CustomerID")
 }
+
+model Amalgamation {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(255)
+
+  // Exact numerics
+  fBigint BigInt @db.BigInt()
+  fBit Int @db.Bit()
+  fDecimal Decimal @db.Decimal(30, 10)
+  fInt Int @db.Int()
+  fMoney Float @db.Money()
+  //fNumeric Decimal @db.Numeric() // @db.Numeric is not supported for sqlserver but it doesn't matter since Numeric is just an alias for Decimal
+  fSmallint Int @db.SmallInt()
+  fSmallmoney Float @db.SmallMoney()
+  fTinyint Int @db.TinyInt()
+
+  // Approximate numerics
+  fFloat Float @db.Float()
+  fReal Float @db.Real()
+
+  // Date and time
+  fDate DateTime @db.Date()
+  fDatetime2 DateTime @db.DateTime2()
+  fDatetime DateTime @db.DateTime()
+  fDatetimeoffset DateTime @db.DateTimeOffset()
+  fSmalldatetime DateTime @db.SmallDateTime()
+  fTime DateTime @db.Time()
+
+  // Character strings
+  fChar String @db.Char(255)
+  fVarchar String @db.VarChar(255)
+  fText String @db.Text()
+
+  // Unicode character strings
+  fNChar String @db.NChar(255)
+  fNVarchar String @db.NVarChar(255)
+  fNText String @db.NText()
+
+  // Binary strings
+  fBinary Bytes @db.Binary()
+  fImage Bytes @db.Image()
+  fVarbinary Bytes @db.VarBinary()
+
+  // Spatial geometry types
+  // Spatial geography types
+
+  // Other data types
+  //fCursor Unsupported("cursor")
+  //fRowversion Unsupported("rowversion")
+  //fHierarchyid Unsupported("hierarchyid")
+  fUniqueidentifier String @db.UniqueIdentifier()
+  //fSqlvariant Unsupported("sql_variant")
+  fXml String @db.Xml()
+  //fTable Unsupported("table")
+
+  createdAt DateTime @default(now()) @db.DateTime
+  updateAt DateTime @default(now()) @db.DateTime
+}

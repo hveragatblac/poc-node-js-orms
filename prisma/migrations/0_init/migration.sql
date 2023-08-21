@@ -2,6 +2,12 @@ BEGIN TRY
 
 BEGIN TRAN;
 
+-- TRY CreateSchema
+IF (SCHEMA_ID(N'SalesLT') IS NULL)
+BEGIN
+  EXEC('CREATE SCHEMA [SalesLT] AUTHORIZATION [dbo]')
+END
+
 -- CreateTable
 CREATE TABLE [SalesLT].[Address] (
     [AddressID] INT NOT NULL IDENTITY(1,1),
