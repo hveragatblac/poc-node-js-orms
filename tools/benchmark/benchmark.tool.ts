@@ -7,11 +7,10 @@ import { Measurement } from './types/measurement.type';
 import { writeFile } from 'node:fs/promises';
 import * as process from 'process';
 
-type BiMap<K1, K2, T> = Map<K1, Map<K2, T>>;
+type BiMap<T> = Record<string, Record<string, T>>;
 
 const targets: Type<Benchmarkable>[] = [PrismaBenchmarkService];
-const measurementsByNameByTarget: BiMap<string, string, Measurement[]> =
-  new Map();
+const measurementsByNameByTarget: BiMap<Measurement[]> = {};
 const repetitions = 10 ** 1;
 
 (async () => {
@@ -22,8 +21,8 @@ const repetitions = 10 ** 1;
     logger.log(`Resolving ${target.name}`);
     const instance = app.get(target);
 
-    const measurementsByName = new Map<string, Measurement[]>();
-    measurementsByNameByTarget.set(target.name, measurementsByName);
+    const measurementsByName = {} as Record<string, Measurement[]>;
+    measurementsByNameByTarget[target.name] = measurementsByName;
 
     logger.log(`Resolving routines`);
     const routines = await instance.run();
@@ -44,11 +43,11 @@ const repetitions = 10 ** 1;
         measurement.finishedAt = performance.now();
       }
 
-      measurementsByName.set(routine.name, measurements);
+      measurementsByName[routine.name] = measurements;
     }
 
     await writeFile(
-      `measurements-${performance.now()}.json`,
+      `benchmark-results/measurements-${performance.now()}.json`,
       JSON.stringify(measurementsByNameByTarget),
       {
         encoding: 'utf-8',
