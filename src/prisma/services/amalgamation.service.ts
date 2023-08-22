@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { Prisma } from '@prisma/client';
+import { Amalgamation, Prisma } from '@prisma/client';
 
 @Injectable()
 export class AmalgamationService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async saveOne(dto: Prisma.AmalgamationCreateInput) {
+  async saveOne(
+    dto: Prisma.AmalgamationCreateInput,
+  ): Promise<Amalgamation | null> {
     return this.prisma.amalgamation.create({
       data: dto,
     });
@@ -18,19 +20,25 @@ export class AmalgamationService {
     });
   }
 
-  async findFirst(criterion: Prisma.AmalgamationFindFirstArgs['where']) {
+  async findFirst(
+    criterion: Prisma.AmalgamationFindFirstArgs['where'],
+  ): Promise<Amalgamation | null> {
     return this.prisma.amalgamation.findFirst({
       where: criterion,
     });
   }
 
-  async findUnique(criterion: Prisma.AmalgamationFindUniqueArgs['where']) {
+  async findUnique(
+    criterion: Prisma.AmalgamationFindUniqueArgs['where'],
+  ): Promise<Amalgamation | null> {
     return this.prisma.amalgamation.findUnique({
       where: criterion,
     });
   }
 
-  async find(criterion: Prisma.AmalgamationFindManyArgs['where']) {
+  async find(
+    criterion: Prisma.AmalgamationFindManyArgs['where'],
+  ): Promise<Amalgamation[]> {
     return this.prisma.amalgamation.findMany({
       where: criterion,
     });
@@ -39,7 +47,7 @@ export class AmalgamationService {
   async updateFirst(
     dto: Prisma.AmalgamationUpdateArgs['data'],
     criterion: Prisma.AmalgamationUpdateArgs['where'],
-  ) {
+  ): Promise<Amalgamation | null> {
     return this.prisma.amalgamation.update({
       data: dto,
       where: criterion,
@@ -56,7 +64,9 @@ export class AmalgamationService {
     });
   }
 
-  async deleteFirst(criterion: Prisma.AmalgamationDeleteArgs['where']) {
+  async deleteFirst(
+    criterion: Prisma.AmalgamationDeleteArgs['where'],
+  ): Promise<Amalgamation | null> {
     return this.prisma.amalgamation.delete({
       where: criterion,
     });
