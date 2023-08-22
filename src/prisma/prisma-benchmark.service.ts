@@ -35,6 +35,7 @@ const random = {
   },
 };
 
+// TODO: Some fail because of unique name constraint
 const generateAmalgamation = (): Prisma.AmalgamationCreateInput => {
   return {
     name: faker.string.alphanumeric({

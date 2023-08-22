@@ -37,7 +37,6 @@ const repetitions = 10 ** 4;
 
       // TODO: Add warm up
       // TODO: Add resource utilization, such as CPU, Memory, Disk and Network
-
       logger.log(`Running ${routine.name}`);
       for (const measurement of measurements) {
         const arg = await routine.generateArguments();
@@ -50,7 +49,6 @@ const repetitions = 10 ** 4;
     }
   }
 
-  // TODO: Compute stats
   const results: unknown[] = [];
   for (const [target, measurementsByName] of Object.entries(
     measurementsByNameByTarget,
