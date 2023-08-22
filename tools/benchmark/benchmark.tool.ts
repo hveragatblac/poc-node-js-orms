@@ -35,6 +35,8 @@ const repetitions = 10 ** 1;
         finishedAt: 0,
       }));
 
+      // TODO: Add warm up
+
       logger.log(`Running ${routine.name}`);
       for (const measurement of measurements) {
         const arg = await routine.generateArguments();
@@ -53,6 +55,8 @@ const repetitions = 10 ** 1;
         encoding: 'utf-8',
       },
     );
+
+    // TODO: Compute stats
   }
 
   await app.close();
