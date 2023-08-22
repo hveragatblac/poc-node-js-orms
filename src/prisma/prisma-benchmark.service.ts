@@ -8,14 +8,14 @@ const random = {
   decimal: (precision: number, scale: number): string => {
     const integerPart = faker.string.numeric({
       length: {
-        min: 0,
+        min: 1,
         max: precision - scale,
       },
       allowLeadingZeros: false,
     });
     const decimalPart = faker.string.numeric({
       length: {
-        min: 0,
+        min: 1,
         max: scale,
       },
       allowLeadingZeros: false,
