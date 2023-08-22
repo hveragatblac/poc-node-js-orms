@@ -187,7 +187,7 @@ model Amalgamation {
   fTinyint Int @db.TinyInt()
 
   // Approximate numerics
-  fFloat Float @db.Float()
+  fFloat Float @db.Float(24)
   fReal Float @db.Real()
 
   // Date and time
