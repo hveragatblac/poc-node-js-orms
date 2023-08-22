@@ -85,7 +85,9 @@ export class PrismaTransactionDemoService implements Demo {
       ],
       { isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted },
     );
-    this.logger.log(`Ran ${results.length} inserts in a single transaction with isolation ReadCommitted`);
+    this.logger.log(
+      `Ran ${results.length} inserts in a single transaction with isolation ReadCommitted`,
+    );
   }
 
   private async doInteractive() {
