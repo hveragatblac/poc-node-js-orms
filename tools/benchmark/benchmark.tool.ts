@@ -5,7 +5,6 @@ import { PrismaBenchmarkService } from '../../src/prisma/prisma-benchmark.servic
 import { Benchmarkable } from './types/benchmarkable.type';
 import { Measurement } from './types/measurement.type';
 import { writeFile } from 'node:fs/promises';
-import * as process from 'process';
 
 type BiMap<T> = Record<string, Record<string, T>>;
 
