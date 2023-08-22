@@ -35,7 +35,7 @@ const repetitions = 10 ** 1;
       }));
 
       // TODO: Add warm up
-      // TODO: Add resource utilization, such as CPU and Memory
+      // TODO: Add resource utilization, such as CPU, Memory, Disk and Network
 
       logger.log(`Running ${routine.name}`);
       for (const measurement of measurements) {
