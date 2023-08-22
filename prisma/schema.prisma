@@ -228,3 +228,19 @@ model Amalgamation {
   createdAt DateTime @default(now()) @db.DateTime
   updateAt DateTime @default(now()) @db.DateTime
 }
+
+model User {
+  id String @id @db.UniqueIdentifier @default(dbgenerated("newid()"), map: "DF_User_id")
+  name String @db.NVarChar(255) @unique(map: "AK_User_name")
+
+  nfts Nft[]
+}
+
+model Nft {
+  id String @id @db.UniqueIdentifier @default(dbgenerated("newid()"), map: "DF_Nft_id")
+  url String @db.NVarChar(510) @unique(map: "AK_Nft_url")
+
+  userId String @db.UniqueIdentifier
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
