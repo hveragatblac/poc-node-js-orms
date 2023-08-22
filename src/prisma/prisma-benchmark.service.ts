@@ -35,7 +35,7 @@ const random = {
   },
 };
 
-const amalgamation = async (): Promise<Prisma.AmalgamationCreateInput> => {
+const generateAmalgamation = (): Prisma.AmalgamationCreateInput => {
   return {
     name: faker.string.alphanumeric({
       casing: 'mixed',
@@ -115,7 +115,71 @@ export class PrismaBenchmarkService implements Benchmarkable {
         task: async (dto) => {
           await this.amalgamationService.saveOne(dto);
         },
-        generateArguments: amalgamation,
+        generateArguments: generateAmalgamation,
+      },
+      {
+        name: 'Bulk insert',
+        task: async (dtos) => {
+          await this.amalgamationService.saveMany(dtos);
+        },
+        generateArguments: () =>
+          Array.from({ length: 2000 }).map(generateAmalgamation),
+      },
+      {
+        name: 'First select',
+        task: async () => {},
+        generateArguments: () => undefined,
+      },
+      {
+        name: 'Unique select',
+        task: async () => {},
+        generateArguments: () => undefined,
+      },
+      {
+        name: 'select',
+        task: async () => {},
+        generateArguments: () => undefined,
+      },
+      {
+        name: 'Single update',
+        task: async ({ dto, criterion }) => {
+          await this.amalgamationService.updateFirst(dto, criterion);
+        },
+        generateArguments: () => {
+          const dto = generateAmalgamation();
+          const criterion = { name: dto.name };
+          return { dto, criterion };
+        },
+      },
+      {
+        name: 'Bulk update',
+        task: async ({ dto, criterion }) => {
+          await this.amalgamationService.updateMany(dto, criterion);
+        },
+        generateArguments: () => {
+          const dtos = Array.from({ length: 2000 });
+          const names = Array.from({ length: 2000 });
+          for (let i = 0; i < dtos.length; i++) {
+            dtos[i] = generateAmalgamation();
+            names[i] = (dtos[i] as any).name;
+          }
+          const criterion = { name: { IN: names } };
+          return { dtos, criterion };
+        },
+      },
+      {
+        name: 'First delete',
+        task: async (criterion) => {
+          await this.amalgamationService.deleteFirst(criterion);
+        },
+        generateArguments: () => undefined,
+      },
+      {
+        name: 'Bulk delete',
+        task: async (criterion) => {
+          await this.amalgamationService.deleteMany(criterion);
+        },
+        generateArguments: () => undefined,
       },
     ];
   }
