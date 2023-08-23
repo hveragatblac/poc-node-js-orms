@@ -1,14 +1,19 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { KnexTransactionDemoService } from './knex-transaction-demo.service';
 import { KnexModule as NestJsKnexModule } from 'nestjs-knex';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { inspect } from 'node:util';
 
 @Module({
   imports: [
+    ConfigModule,
     NestJsKnexModule.forRootAsync({
       useFactory: (configService: ConfigService) => {
-        return configService.get('db-knex');
+        return {
+          config: configService.get('db-knex'),
+        };
       },
+      inject: [ConfigService],
     }),
   ],
   providers: [KnexTransactionDemoService],

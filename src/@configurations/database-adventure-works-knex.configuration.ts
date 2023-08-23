@@ -11,7 +11,7 @@ export default registerAs('db-knex', (): Knex.Config => {
     database: process.env.DATABASE_KNEX_DATABASE,
     options: {
       encrypt: true,
-      trustedConnection: true,
+      trustServerCertificate: true,
     },
   };
   return {

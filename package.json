@@ -21,7 +21,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "benchmark": "ts-node ./tools/benchmark/benchmark.tool.ts"
+    "benchmark": "ts-node ./tools/benchmark/benchmark.tool.ts",
+    "demonstrate": "ts-node ./tools/demonstrator/demonstrator.tool.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
