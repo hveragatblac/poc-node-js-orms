@@ -1,9 +1,9 @@
-import { Logger, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { KnexTransactionDemoService } from './knex-transaction-demo.service';
 import { KnexModule as NestJsKnexModule } from 'nestjs-knex';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { inspect } from 'node:util';
 import { AmalgamationService } from './services/amalgamation.service';
+import { KnexBenchmarkService } from './knex-benchmark.service';
 
 @Module({
   imports: [
@@ -17,6 +17,10 @@ import { AmalgamationService } from './services/amalgamation.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [KnexTransactionDemoService, AmalgamationService],
+  providers: [
+    AmalgamationService,
+    KnexTransactionDemoService,
+    KnexBenchmarkService,
+  ],
 })
 export class KnexModule {}

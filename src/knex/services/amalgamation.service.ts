@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectKnex, Knex } from 'nestjs-knex';
+import { inspect } from 'node:util';
 
 @Injectable()
 export class AmalgamationService {
@@ -9,11 +10,14 @@ export class AmalgamationService {
   ) {}
 
   async saveOne(dto: unknown) {
-    return this.knex
+    const insert = this.knex
       .withSchema('SalesLT')
       .returning('*')
       .insert(dto)
       .into('Amalgamation');
+    console.log(inspect(insert.toSQL().toNative()));
+    console.log(inspect(insert.toQuery()));
+    return insert;
   }
 
   async saveMany(dtos: unknown[]) {

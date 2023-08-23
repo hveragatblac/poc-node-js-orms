@@ -6,10 +6,14 @@ import { Benchmarkable } from './types/benchmarkable.type';
 import { Measurement } from './types/measurement.type';
 import { writeFile } from 'node:fs/promises';
 import { Distribution } from '../statistics/distribution.class';
+import { KnexBenchmarkService } from '../../src/knex/knex-benchmark.service';
 
 type BiMap<T> = Record<string, Record<string, T>>;
 
-const targets: Type<Benchmarkable>[] = [PrismaBenchmarkService];
+const targets: Type<Benchmarkable>[] = [
+  // PrismaBenchmarkService,
+  KnexBenchmarkService,
+];
 const measurementsByNameByTarget: BiMap<Measurement[]> = {};
 const repetitions = 10 ** 4;
 
