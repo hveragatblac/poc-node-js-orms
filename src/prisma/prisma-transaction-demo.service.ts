@@ -61,9 +61,7 @@ export class PrismaTransactionDemoService implements Demo {
       data: users,
     });
 
-    this.logger.log(
-      `Create ${payload.count} users in a single transaction`,
-    );
+    this.logger.log(`Create ${payload.count} users in a single transaction`);
   }
 
   private async doSequentialOperations() {

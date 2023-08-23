@@ -13,6 +13,11 @@ export class PrismaMultiDatasourceDemoService implements Demo {
   ) {}
 
   async run(): Promise<void> {
+    await this.doQueryDifferenteDatasources();
+    this.logger.log(`Finished ${PrismaMultiDatasourceDemoService.name}`);
+  }
+
+  private async doQueryDifferenteDatasources() {
     const users = await this.bcsRiesgo.users.count();
     this.logger.log(`Database BCS-RIESGO has ${users} users`);
     const sales = await this.adventureWorks.salesOrderHeader.count();
