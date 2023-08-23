@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "sqlserver"
   url      = env("DATABASE_URL")
+  schemas = ["SalesLT", "base", "transactional"]
 }
 
 model Address {
@@ -23,6 +25,7 @@ model Address {
 
   @@index([AddressLine1, AddressLine2, City, StateProvince, PostalCode, CountryRegion], map: "IX_Address_AddressLine1_AddressLine2_City_StateProvince_PostalCode_CountryRegion")
   @@index([StateProvince], map: "IX_Address_StateProvince")
+  @@schema("SalesLT")
 }
 
 model Customer {
@@ -45,6 +48,7 @@ model Customer {
   SalesOrderHeader SalesOrderHeader[]
 
   @@index([EmailAddress], map: "IX_Customer_EmailAddress")
+  @@schema("SalesLT")
 }
 
 model CustomerAddress {
@@ -57,6 +61,7 @@ model CustomerAddress {
   Customer     Customer @relation(fields: [CustomerID], references: [CustomerID], onUpdate: NoAction, map: "FK_CustomerAddress_Customer_CustomerID")
 
   @@id([CustomerID, AddressID], map: "PK_CustomerAddress_CustomerID_AddressID")
+  @@schema("SalesLT")
 }
 
 model Product {
@@ -80,6 +85,7 @@ model Product {
   ProductCategory        ProductCategory?   @relation(fields: [ProductCategoryID], references: [ProductCategoryID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Product_ProductCategory_ProductCategoryID")
   ProductModel           ProductModel?      @relation(fields: [ProductModelID], references: [ProductModelID], onDelete: NoAction, onUpdate: NoAction, map: "FK_Product_ProductModel_ProductModelID")
   SalesOrderDetail       SalesOrderDetail[]
+  @@schema("SalesLT")
 }
 
 model ProductCategory {
@@ -91,6 +97,7 @@ model ProductCategory {
   Product                 Product[]
   ProductCategory         ProductCategory?  @relation("ProductCategoryToProductCategory", fields: [ParentProductCategoryID], references: [ProductCategoryID], onDelete: NoAction, onUpdate: NoAction, map: "FK_ProductCategory_ProductCategory_ParentProductCategoryID_ProductCategoryID")
   other_ProductCategory   ProductCategory[] @relation("ProductCategoryToProductCategory")
+  @@schema("SalesLT")
 }
 
 model ProductDescription {
@@ -99,6 +106,7 @@ model ProductDescription {
   rowguid                        String                           @unique(map: "AK_ProductDescription_rowguid") @default(dbgenerated("newid()"), map: "DF_ProductDescription_rowguid") @db.UniqueIdentifier
   ModifiedDate                   DateTime                         @default(now(), map: "DF_ProductDescription_ModifiedDate") @db.DateTime
   ProductModelProductDescription ProductModelProductDescription[]
+  @@schema("SalesLT")
 }
 
 model ProductModel {
@@ -109,6 +117,7 @@ model ProductModel {
   ModifiedDate                   DateTime                         @default(now(), map: "DF_ProductModel_ModifiedDate") @db.DateTime
   Product                        Product[]
   ProductModelProductDescription ProductModelProductDescription[]
+  @@schema("SalesLT")
 }
 
 model ProductModelProductDescription {
@@ -121,6 +130,7 @@ model ProductModelProductDescription {
   ProductModel         ProductModel       @relation(fields: [ProductModelID], references: [ProductModelID], onUpdate: NoAction, map: "FK_ProductModelProductDescription_ProductModel_ProductModelID")
 
   @@id([ProductModelID, ProductDescriptionID, Culture], map: "PK_ProductModelProductDescription_ProductModelID_ProductDescriptionID_Culture")
+  @@schema("SalesLT")
 }
 
 model SalesOrderDetail {
@@ -138,6 +148,7 @@ model SalesOrderDetail {
 
   @@id([SalesOrderID, SalesOrderDetailID], map: "PK_SalesOrderDetail_SalesOrderID_SalesOrderDetailID")
   @@index([ProductID], map: "IX_SalesOrderDetail_ProductID")
+  @@schema("SalesLT")
 }
 
 model SalesOrderHeader {
@@ -169,6 +180,7 @@ model SalesOrderHeader {
   Customer                                          Customer           @relation(fields: [CustomerID], references: [CustomerID], onUpdate: NoAction, map: "FK_SalesOrderHeader_Customer_CustomerID")
 
   @@index([CustomerID], map: "IX_SalesOrderHeader_CustomerID")
+  @@schema("SalesLT")
 }
 
 model Amalgamation {
@@ -227,6 +239,7 @@ model Amalgamation {
 
   createdAt DateTime @default(now()) @db.DateTime
   updateAt DateTime @default(now()) @db.DateTime
+  @@schema("SalesLT")
 }
 
 model User {
@@ -234,6 +247,7 @@ model User {
   name String @db.NVarChar(255) @unique(map: "AK_User_name")
 
   nfts Nft[]
+  @@schema("SalesLT")
 }
 
 model Nft {
@@ -242,5 +256,22 @@ model Nft {
 
   userId String @db.UniqueIdentifier
   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  @@schema("SalesLT")
 }
 
+model BaseUser {
+  id     Int     @id
+  orders Order[]
+
+  // Define table name, useful if we have repeated table names in different database schemas
+  @@map("user")
+  @@schema("base")
+}
+
+model Order {
+  id      Int  @id
+  user    BaseUser @relation(fields: [id], references: [id])
+  userId Int
+
+  @@schema("transactional")
+}
