@@ -4,6 +4,7 @@ import { SalesOrderDetailService } from './services/sales-order-detail.service';
 import { AmalgamationService } from './services/amalgamation.service';
 import { PrismaBenchmarkService } from './prisma-benchmark.service';
 import { PrismaTransactionDemoService } from './prisma-transaction-demo.service';
+import { PrismaCachingDemoService } from './prisma-caching-demo.service';
 
 @Module({
   providers: [
@@ -12,6 +13,7 @@ import { PrismaTransactionDemoService } from './prisma-transaction-demo.service'
     AmalgamationService,
     PrismaBenchmarkService,
     PrismaTransactionDemoService,
+    PrismaCachingDemoService,
   ],
   exports: [PrismaService],
 })
