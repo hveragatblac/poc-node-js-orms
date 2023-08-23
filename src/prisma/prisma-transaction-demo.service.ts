@@ -40,19 +40,21 @@ export class PrismaTransactionDemoService implements Demo {
   }
 
   private async doBulkOperation() {
-    const userCount = 2000;
-    const nftPerUserCount = 4;
-    const nfts = faker.helpers
-      .uniqueArray(faker.internet.url, nftPerUserCount * userCount)
-      .map((url) => ({ url }));
+    const userCount = 800;
+    // REMINDER: Nested writes are not supported when using createMany
+
+    // const nftPerUserCount = 4;
+    // const nfts = faker.helpers
+    //   .uniqueArray(faker.internet.url, nftPerUserCount * userCount)
+    //   .map((url) => ({ url }));
 
     const users = faker.helpers
       .uniqueArray(faker.internet.userName, userCount)
       .map((userName, i) => ({
         name: userName,
-        nfts: {
-          create: nfts.slice(i, nftPerUserCount * (1 + i)),
-        },
+        // nfts: {
+        //   create: nfts.slice(i, nftPerUserCount * (1 + i)),
+        // },
       }));
 
     const payload = await this.prisma.user.createMany({
