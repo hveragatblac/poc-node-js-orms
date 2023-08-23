@@ -62,7 +62,7 @@ export class PrismaTransactionDemoService implements Demo {
     });
 
     this.logger.log(
-      `Create ${payload.count} users with related fields in a single transaction`,
+      `Create ${payload.count} users in a single transaction`,
     );
   }
 
