@@ -37,3 +37,4 @@ lerna-debug.log*
 # Benchmark
 benchmark-results
 test-distribution*.json
+prisma-bcs-riesgo/generated

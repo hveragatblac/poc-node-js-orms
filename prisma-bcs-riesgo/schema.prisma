@@ -1,0 +1,930 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_RIESGO_URL")
+}
+
+model AccessControl__USR_Permission {
+  id          String @id(map: "PK_89de6d675282125a4d5521f69b2") @db.VarChar(255)
+  description String @default("", map: "DF_28da1e6cfa7d8e5d3dfbcd5fbb3") @db.Text
+
+  @@map("AccessControl::USR_Permission")
+}
+
+model AccessControl__USR_Profile {
+  id          String @id(map: "PK_5c4e5d554e84cb84f8fd7b6b05b") @db.VarChar(3)
+  description String @default("", map: "DF_d731876c66074b6b7d05ea61b4b") @db.Text
+  name        String @unique(map: "UQ_7f5f9370af3afafc8c9a16e2153") @db.VarChar(255)
+
+  @@map("AccessControl::USR_Profile")
+}
+
+model AccessControl__USR_User {
+  id                                   String                                 @id(map: "PK_ace7c472acba9ab08adf9632127") @default(dbgenerated("newsequentialid()"), map: "DF_ace7c472acba9ab08adf9632127") @db.UniqueIdentifier
+  name                                 String                                 @unique(map: "UQ_33500393791862d9986e55a56a2") @db.VarChar(255)
+  email                                String                                 @unique(map: "UQ_ba775ff6d9bf6ed07e0cbd9ac88") @db.VarChar(255)
+  Aggregation__AGG_Aggregation         Aggregation__AGG_Aggregation[]
+  Aggregation__AGG_Attribute           Aggregation__AGG_Attribute[]
+  Platform__HLP_Documentation          Platform__HLP_Documentation[]
+  Platform__HLP_Help                   Platform__HLP_Help[]
+  Reporting__RPT_Element_Configuration Reporting__RPT_Element_Configuration[]
+  Reporting__RPT_Template              Reporting__RPT_Template[]
+
+  @@map("AccessControl::USR_User")
+}
+
+model Aggregation__AGG_Aggregation {
+  id                                    String                                  @id(map: "PK_55938c14b5cf4ccf62a32caaaff") @default(dbgenerated("newsequentialid()"), map: "DF_55938c14b5cf4ccf62a32caaaff") @db.UniqueIdentifier
+  name                                  String                                  @db.VarChar(255)
+  user_id                               String?                                 @db.UniqueIdentifier
+  AccessControl__USR_User               AccessControl__USR_User?                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_acb2a2d8c4332892de004233ca9")
+  Aggregation__AGG_AggregationAttribute Aggregation__AGG_AggregationAttribute[]
+
+  @@map("Aggregation::AGG_Aggregation")
+}
+
+model Aggregation__AGG_AggregationAttribute {
+  id                           String                        @id(map: "PK_fa67415be1ac069415ca21db64c") @default(dbgenerated("newsequentialid()"), map: "DF_fa67415be1ac069415ca21db64c") @db.UniqueIdentifier
+  aggregationId                String?                       @db.UniqueIdentifier
+  position                     Int
+  attributeId                  String?                       @db.UniqueIdentifier
+  Aggregation__AGG_Aggregation Aggregation__AGG_Aggregation? @relation(fields: [aggregationId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_08c785c2c7742465d19a31e10d3")
+  Aggregation__AGG_Attribute   Aggregation__AGG_Attribute?   @relation(fields: [attributeId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_a0780a565c333eb8e0a6d762c72")
+
+  @@map("Aggregation::AGG_AggregationAttribute")
+}
+
+model Aggregation__AGG_Attribute {
+  name                                  String                                  @db.VarChar(255)
+  description                           String?                                 @db.Text
+  code                                  String?                                 @db.VarChar(3)
+  user_id                               String?                                 @db.UniqueIdentifier
+  id                                    String                                  @id(map: "PK_bfbcb743970f3f4eddcf5263a50") @default(dbgenerated("newsequentialid()"), map: "DF_bfbcb743970f3f4eddcf5263a50") @db.UniqueIdentifier
+  Aggregation__AGG_AggregationAttribute Aggregation__AGG_AggregationAttribute[]
+  AccessControl__USR_User               AccessControl__USR_User?                @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_2b3eebb3caf234d4960fd0f15f0")
+
+  @@unique([name, user_id], map: "UQ_658f65b44c53f71ff3906630d93")
+  @@map("Aggregation::AGG_Attribute")
+}
+
+model IO__INP_ExternalAttributeMapping {
+  id                                     String                                  @id(map: "INP_ExternalAttributeMapping_pk") @default(dbgenerated("newsequentialid()"), map: "DF_c1126ed0fa81e6a05bc46effbdd") @db.UniqueIdentifier
+  source_attribute                       String                                  @db.VarChar(255)
+  target_attribute                       String                                  @db.VarChar(255)
+  default_value                          String?                                 @db.VarChar(255)
+  is_active                              Int                                     @default(1, map: "DF_d3effbd61fa2218b79863bfaea4") @db.TinyInt
+  external_entity_container_id           String?                                 @db.UniqueIdentifier
+  mappers                                String?                                 @default("[]", map: "DF_6b0127834130fd9cb7622fdee1c") @db.NText
+  is_required                            Int                                     @default(0, map: "DF_b812ac70e0576c29d3a26c4072e") @db.TinyInt
+  IO__INP_ExternalEntityContainerMapping IO__INP_ExternalEntityContainerMapping? @relation(fields: [external_entity_container_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "IO::INP_ExternalEntityContainerMapping_eecm_fk")
+
+  @@map("IO::INP_ExternalAttributeMapping")
+}
+
+model IO__INP_ExternalContainer {
+  id                                     String                                   @id(map: "INP_ExternalContainer_pk") @default(dbgenerated("newsequentialid()"), map: "DF_72d7f38ef3e475cb58367203bb6") @db.UniqueIdentifier
+  fully_qualified_name                   String                                   @db.VarChar(255)
+  name                                   String                                   @db.VarChar(255)
+  datasource                             String                                   @db.NVarChar(255)
+  container_type                         String                                   @db.NVarChar(255)
+  metadata                               String                                   @default("{}", map: "DF_425e6f01afe113e4b0558218916") @db.NText
+  is_active                              Int                                      @default(1, map: "DF_58f4243f1fd6f99b350caeb149f") @db.TinyInt
+  IO__INP_ExternalEntityContainerMapping IO__INP_ExternalEntityContainerMapping[]
+
+  @@map("IO::INP_ExternalContainer")
+}
+
+model IO__INP_ExternalEntityContainerMapping {
+  id                               String                             @id(map: "IO::INP_ExternalEntityContainerMapping_pk") @default(dbgenerated("newsequentialid()"), map: "DF_9d9ca0dc30a930fda6274584d5a") @db.UniqueIdentifier
+  source_identifier_attribute      String                             @db.VarChar(255)
+  is_active                        Int                                @default(1, map: "DF_49535e20ef12a74404fdc0d1fe1") @db.TinyInt
+  metadata                         String                             @default("{}", map: "DF_39b3e735397ce702b299ae7dcad") @db.NText
+  external_container_id            String?                            @db.UniqueIdentifier
+  external_entity_mapping_id       String                             @db.UniqueIdentifier
+  is_identity_provider             Int                                @default(0, map: "DF_636cc7dbf8f0e60e8fd14ef9375") @db.TinyInt
+  IO__INP_ExternalAttributeMapping IO__INP_ExternalAttributeMapping[]
+  IO__INP_ExternalContainer        IO__INP_ExternalContainer?         @relation(fields: [external_container_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "IO::INP_ExternalEntityContainerMapping_ec_fk")
+  IO__INP_ExternalEntityMapping    IO__INP_ExternalEntityMapping      @relation(fields: [external_entity_mapping_id], references: [id], onUpdate: NoAction, map: "IO::INP_ExternalEntityContainerMapping_eem_fk")
+
+  @@map("IO::INP_ExternalEntityContainerMapping")
+}
+
+model IO__INP_ExternalEntityMapping {
+  id                                     String                                   @id(map: "IO::INP_ExternalEntityMapping_pk") @default(dbgenerated("newsequentialid()"), map: "DF_c23c11971595130604cbbfaf62f") @db.UniqueIdentifier
+  name                                   String                                   @db.VarChar(255)
+  identifier_attribute                   String                                   @db.VarChar(255)
+  IO__INP_ExternalEntityContainerMapping IO__INP_ExternalEntityContainerMapping[]
+
+  @@map("IO::INP_ExternalEntityMapping")
+}
+
+model IO__INP_Files {
+  id        String  @id(map: "PK_88c3e45b1f213c753cfc18506c1") @default(dbgenerated("newsequentialid()"), map: "DF_88c3e45b1f213c753cfc18506c1") @db.UniqueIdentifier
+  file_name String  @db.NVarChar(255)
+  user_id   String? @db.UniqueIdentifier
+  file_type String  @db.VarChar(15)
+  status    String  @db.NVarChar(255)
+  data      Bytes
+  users     users?  @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ec50860b2332cccde13d505517e")
+
+  @@map("IO::INP_Files")
+}
+
+model IO__INP_Input {
+  id               String            @id(map: "PK_9bde116a89e05b1e8ee1e0fdf32") @default(dbgenerated("newsequentialid()"), map: "DF_9bde116a89e05b1e8ee1e0fdf32") @db.UniqueIdentifier
+  type_id          String?           @db.VarChar(6)
+  provider_id      String?           @db.VarChar(3)
+  IO__INP_Type     IO__INP_Type?     @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_0b06bf439c4a96242fff8f8a9e8")
+  IO__INP_Provider IO__INP_Provider? @relation(fields: [provider_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_7eb9b636a29e4c29e281222dce2")
+  IO__INP_Process  IO__INP_Process[]
+
+  @@map("IO::INP_Input")
+}
+
+model IO__INP_Process {
+  id                                 String                               @id(map: "PK_82de7fa97edb7d6ac988400d1ee") @default(dbgenerated("newsequentialid()"), map: "DF_82de7fa97edb7d6ac988400d1ee") @db.UniqueIdentifier
+  is_available                       Int                                  @default(0, map: "DF_9c38b810a8edae6e26b8a58315b") @db.TinyInt
+  business_date                      DateTime                             @db.Date
+  startAt                            DateTime                             @default(now(), map: "DF_991f7377a5d21c35ca32b4f683d")
+  endAt                              DateTime?
+  updatedAt                          DateTime                             @default(now(), map: "DF_f458008c76f3a3951eefab3a79a")
+  message                            String                               @db.NText
+  userId                             String?                              @db.UniqueIdentifier
+  inputId                            String?                              @db.UniqueIdentifier
+  statusId                           String?                              @db.VarChar(3)
+  IO__INP_Process_Status             IO__INP_Process_Status?              @relation(fields: [statusId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_1e664609613bc4a159aae978b6b")
+  users                              users?                               @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_2a2cdc791c48f0314a445e682d5")
+  IO__INP_Input                      IO__INP_Input?                       @relation(fields: [inputId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_aa99995f9a3f13c9c3172e2ac85")
+  IO__INP_Storage_PortfolioHierarchy IO__INP_Storage_PortfolioHierarchy[]
+  IO__INP_Storage_Position           IO__INP_Storage_Position[]
+  IO__INP_Storage_Price              IO__INP_Storage_Price[]
+  IO__OUT_Type_Session               IO__OUT_Type_Session[]
+
+  @@map("IO::INP_Process")
+}
+
+model IO__INP_Process_Status {
+  id              String            @id(map: "PK_31d33c06a394fd292ab4bb5db46") @unique(map: "UQ_31d33c06a394fd292ab4bb5db46") @db.VarChar(3)
+  name            String            @unique(map: "UQ_86fdbf366b0963b03e939e7022f") @db.VarChar(255)
+  IO__INP_Process IO__INP_Process[]
+
+  @@map("IO::INP_Process_Status")
+}
+
+model IO__INP_Provider {
+  id            String          @id(map: "PK_7a2621fd35607fb062d44dee9cc") @unique(map: "UQ_7a2621fd35607fb062d44dee9cc") @db.VarChar(3)
+  name          String          @unique(map: "UQ_7f1cae2af368a26194ed4f380bb") @db.VarChar(255)
+  IO__INP_Input IO__INP_Input[]
+
+  @@map("IO::INP_Provider")
+}
+
+model IO__INP_Storage_Exchange_Rate {
+  id        String   @id(map: "IO::INP_Storage_Exchange_Rate_pk") @default(dbgenerated("newsequentialid()"), map: "DF_65557fe039655b2c1aacc118cb1") @db.UniqueIdentifier
+  uf_value  Decimal  @db.Decimal(30, 10)
+  usd_value Decimal  @db.Decimal(30, 10)
+  eur_value Decimal  @db.Decimal(30, 10)
+  fecha     DateTime @unique(map: "UQ_ea849c4b073a96f9b7772d6b8a9") @db.Date
+
+  @@map("IO::INP_Storage_Exchange_Rate")
+}
+
+model IO__INP_Storage_Factor {
+  id                        String                     @id(map: "PK_3f3f419649b0d342d85b4789466") @default(dbgenerated("newsequentialid()"), map: "DF_3f3f419649b0d342d85b4789466") @db.UniqueIdentifier
+  date                      DateTime                   @db.Date
+  mnemonic                  String                     @db.VarChar(255)
+  name                      String                     @db.VarChar(255)
+  value                     Decimal                    @db.Decimal(30, 10)
+  parameterId               String?                    @db.UniqueIdentifier
+  IO__INP_Storage_Parameter IO__INP_Storage_Parameter? @relation(fields: [parameterId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_dec71a8c93f1534984274353a55")
+
+  @@map("IO::INP_Storage_Factor")
+}
+
+model IO__INP_Storage_Instrument {
+  id                                String    @id(map: "IO::INP_Storage_Instrument_pk") @default(dbgenerated("newsequentialid()"), map: "DF_a7d8e3de5e5d4b3044172dc794d") @db.UniqueIdentifier
+  mnemonic                          String    @db.VarChar(255)
+  asset_type                        String?   @db.VarChar(255)
+  country                           String?   @db.VarChar(255)
+  coupon_rate                       Decimal?  @db.Decimal(30, 10)
+  coupon_type                       String?   @db.VarChar(255)
+  credit_rating                     String?   @db.VarChar(255)
+  currency                          String?   @db.VarChar(255)
+  dividend_yield                    Decimal?  @db.Decimal(30, 10)
+  duration                          Decimal?  @db.Decimal(30, 10)
+  equity_beta                       Decimal?  @db.Decimal(30, 10)
+  industry_group                    String?   @db.VarChar(255)
+  industry_sector                   String?   @db.VarChar(255)
+  industry_subgroup                 String?   @db.VarChar(255)
+  issuer                            String    @default("", map: "DF_d4f5a67491115b040f4e19f67df") @db.VarChar(255)
+  long_short                        String?   @db.VarChar(255)
+  market_cap                        Decimal?  @db.Decimal(30, 10)
+  maturity                          DateTime? @db.Date
+  region                            String?   @db.VarChar(255)
+  yield_to_maturity                 Decimal?  @db.Decimal(30, 10)
+  mark_to_market_in_clp             Decimal   @default(0, map: "DF_26102f52ee892db33a0d3064d9d") @db.Decimal(30, 10)
+  mark_to_market_in_native_currency Decimal   @default(0, map: "DF_abadbf876c995e0398d28e94c84") @db.Decimal(30, 10)
+  maturity_2                        Decimal?  @db.Decimal(30, 10)
+  market                            String?   @db.VarChar(255)
+  short_name                        String?   @db.VarChar(255)
+  isin_or_cusip                     String?   @db.VarChar(255)
+  secondary_asset_type              String?   @db.VarChar(255)
+  underlying                        String?   @db.VarChar(255)
+  underlying_type                   String?   @db.VarChar(255)
+  underlying_index                  String?   @db.VarChar(255)
+  series                            String?   @db.VarChar(255)
+  outstanding_shares                Decimal?  @db.Decimal(30, 10)
+  outstanding_balance               Decimal?  @db.Decimal(30, 10)
+  amortization_type                 String?   @db.VarChar(255)
+  amortization                      String?   @db.VarChar(255)
+  optionality                       String?   @db.VarChar(255)
+  option_type                       String?   @db.VarChar(255)
+  secondary_option_type             String?   @db.VarChar(255)
+  coupon_frequency                  String?   @db.VarChar(255)
+  tir                               Decimal?  @db.Decimal(30, 10)
+  accrued_interest                  Decimal?  @db.Decimal(30, 10)
+  convexity                         Decimal?  @db.Decimal(30, 10)
+  industry_subsector                String?   @db.VarChar(255)
+  issuing_date                      DateTime? @db.Date
+  debt_type                         String?   @db.VarChar(255)
+  notional                          Decimal?  @db.Decimal(30, 10)
+  trade_price                       Decimal?  @db.Decimal(30, 10)
+  strike_price                      Decimal?  @db.Decimal(30, 10)
+  clean_price_in_clp                Decimal?  @db.Decimal(30, 10)
+  contract_size                     Decimal?  @db.Decimal(30, 10)
+  feature_by_key                    String    @default("{}", map: "DF_ea11f547de68d3c838faf932599") @db.NText
+
+  @@map("IO::INP_Storage_Instrument")
+}
+
+model IO__INP_Storage_MarketPrice {
+  id            String    @id(map: "PK_08c4769bc35bbee870e1b436ed6") @default(dbgenerated("newsequentialid()"), map: "DF_08c4769bc35bbee870e1b436ed6") @db.UniqueIdentifier
+  mnemonic      String    @db.VarChar(255)
+  process       String    @db.VarChar(255)
+  market_price  Decimal   @db.Decimal(26, 8)
+  correlative   String?   @db.VarChar(2)
+  business_date DateTime? @db.Date
+  created_at    DateTime  @default(now(), map: "DF_afb93936f3454c589fa79d00de9") @db.DateTime
+  market        String?   @db.VarChar(255)
+
+  @@map("IO::INP_Storage_MarketPrice")
+}
+
+model IO__INP_Storage_Parameter {
+  id                     String                   @id(map: "PK_6b15909ce996c8a56439350bd81") @default(dbgenerated("newsequentialid()"), map: "DF_6b15909ce996c8a56439350bd81") @db.UniqueIdentifier
+  date                   DateTime                 @db.Date
+  mnemonic               String                   @db.VarChar(255)
+  presence               Decimal                  @db.Decimal(30, 10)
+  alpha                  Decimal                  @db.Decimal(30, 10)
+  issuance_date          DateTime?                @db.Date
+  expiration_date        DateTime?                @db.Date
+  risk                   String?                  @db.VarChar(255)
+  rate                   Decimal?                 @db.Decimal(30, 10)
+  duration               Decimal?                 @db.Decimal(30, 10)
+  convexity              Decimal?                 @db.Decimal(30, 10)
+  currency               String?                  @db.VarChar(255)
+  market                 String?                  @db.VarChar(255)
+  group                  String?                  @db.VarChar(255)
+  family                 String?                  @db.VarChar(255)
+  error_deviation        Decimal?                 @db.Decimal(30, 10)
+  valuation              Decimal?                 @db.Decimal(30, 10)
+  IO__INP_Storage_Factor IO__INP_Storage_Factor[]
+
+  @@map("IO::INP_Storage_Parameter")
+}
+
+model IO__INP_Storage_PortfolioHierarchy {
+  id              String           @id(map: "PK_dd15fe79dd96f52de1af9c181e5") @default(dbgenerated("newsequentialid()"), map: "DF_dd15fe79dd96f52de1af9c181e5") @db.UniqueIdentifier
+  portfolio_name  String?          @db.VarChar(255)
+  parent_book     String?          @db.VarChar(255)
+  processId       String?          @db.UniqueIdentifier
+  created_at      DateTime         @default(now(), map: "DF_b1d3ffd859afdc72a9e0a0d5490") @db.DateTime
+  IO__INP_Process IO__INP_Process? @relation(fields: [processId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_bb6ae38bd398428a6f6d3595314")
+
+  @@map("IO::INP_Storage_PortfolioHierarchy")
+}
+
+model IO__INP_Storage_Position {
+  id              String           @id(map: "PK_2a8ec28e404fc81312714113721") @default(dbgenerated("newsequentialid()"), map: "DF_2a8ec28e404fc81312714113721") @db.UniqueIdentifier
+  mnemonic        String           @db.VarChar(100)
+  time_stamp      DateTime?        @db.DateTime
+  portfolio       String           @db.VarChar(50)
+  provider_id     String?          @db.VarChar(100)
+  business_date   DateTime         @db.DateTime
+  long_short      String?          @db.VarChar(10)
+  trading_desk    String?          @db.VarChar(100)
+  trader          String?          @db.VarChar(100)
+  custom          String?          @db.NText
+  load_id         String?          @db.UniqueIdentifier
+  createdAt       DateTime         @default(now(), map: "DF_4cfc59a9c955fbc7eeafb0711bf")
+  label           String?          @db.VarChar(100)
+  record_type     String?          @db.VarChar(2)
+  units           BigInt
+  trading_price   Decimal?         @db.Decimal(30, 10)
+  IO__INP_Process IO__INP_Process? @relation(fields: [load_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_93bb5cfe85fc75b0dbb0940ba6e")
+
+  @@map("IO::INP_Storage_Position")
+}
+
+model IO__INP_Storage_Price {
+  id              String           @id(map: "PK_f372b4c372773898c28ba43d388") @default(dbgenerated("newsequentialid()"), map: "DF_f372b4c372773898c28ba43d388") @db.UniqueIdentifier
+  time_stamp      DateTime         @db.DateTime
+  instrument_name String           @db.NVarChar(255)
+  currency        String           @db.NVarChar(255)
+  load_id         String?          @db.UniqueIdentifier
+  business_date   DateTime         @db.DateTime
+  created_at      DateTime         @default(now(), map: "DF_fa4b6c32c5f7736869775301128") @db.DateTime
+  spot_price      Decimal          @db.Decimal(26, 8)
+  IO__INP_Process IO__INP_Process? @relation(fields: [load_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_5eb367c0c206fafc9c5a57de4ff")
+
+  @@map("IO::INP_Storage_Price")
+}
+
+model IO__INP_Type {
+  id            String          @id(map: "PK_c4c958ae215354fe8e48ad53ac5") @unique(map: "UQ_c4c958ae215354fe8e48ad53ac5") @db.VarChar(6)
+  name          String          @unique(map: "UQ_405039e1262172326b478d680e7") @db.VarChar(255)
+  description   String?         @default("", map: "DF_81f1b65dc5c75a6cb87dad99cd6") @db.Text
+  headers       String          @db.Text
+  storage_table String          @unique(map: "UQ_322d5d43e8e2bf49c97d2a225bf") @db.VarChar(255)
+  IO__INP_Input IO__INP_Input[]
+
+  @@map("IO::INP_Type")
+}
+
+model IO__OUT_Output {
+  id                   String                 @id(map: "PK_8ed31d81560aef7a473314fe423") @default(dbgenerated("newsequentialid()"), map: "DF_8ed31d81560aef7a473314fe423") @db.UniqueIdentifier
+  definition_entity_id String                 @default(dbgenerated("newsequentialid()"), map: "DF_80406f71fbcebfd24830e716b11") @db.UniqueIdentifier
+  type_id              String?                @db.VarChar(6)
+  IO__OUT_Type         IO__OUT_Type?          @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_63b764e3020337a64b99324feb7")
+  IO__OUT_Process      IO__OUT_Process[]
+  IO__OUT_Type_Session IO__OUT_Type_Session[]
+
+  @@map("IO::OUT_Output")
+}
+
+model IO__OUT_Process {
+  id                      String                    @id(map: "PK_273a1ffcd327230ea7bca91de22") @default(dbgenerated("newsequentialid()"), map: "DF_273a1ffcd327230ea7bca91de22") @db.UniqueIdentifier
+  business_date           DateTime                  @db.Date
+  started_at              DateTime                  @default(now(), map: "DF_26f5cb552a7bfffae95d61db7d9")
+  elapsed_milliseconds    BigInt?
+  output_id               String                    @db.UniqueIdentifier
+  status_id               String                    @db.VarChar(3)
+  finished_at             DateTime?                 @db.DateTime
+  IO__OUT_Output          IO__OUT_Output            @relation(fields: [output_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_89b3f637f64a54095644dd4472d")
+  IO__OUT_Process_Status  IO__OUT_Process_Status    @relation(fields: [status_id], references: [id], onUpdate: NoAction, map: "FK_bb2074895c129387769735b4d71")
+  IO__OUT_Storage_Session IO__OUT_Storage_Session[]
+
+  @@map("IO::OUT_Process")
+}
+
+model IO__OUT_Process_Status {
+  id              String            @id(map: "PK_cc5474cd08d992b22d4d91590da") @db.VarChar(3)
+  name            String            @unique(map: "IO::OUT_Process_Status_name_uq") @db.VarChar(255)
+  IO__OUT_Process IO__OUT_Process[]
+
+  @@map("IO::OUT_Process_Status")
+}
+
+model IO__OUT_Storage_Session {
+  id                String          @id(map: "PK_551a50b171c98f95bc446f6e931") @default(dbgenerated("newsequentialid()"), map: "DF_551a50b171c98f95bc446f6e931") @db.UniqueIdentifier
+  output_process_id String          @db.UniqueIdentifier
+  intraday_time     DateTime?       @db.Time
+  portfolio_id      String          @db.UniqueIdentifier
+  postgres_id       String?         @db.VarChar(45)
+  bcs_price_type    String?         @db.VarChar(255)
+  correlative       String?         @db.VarChar(2)
+  market_prices_id  String?         @db.VarChar(255)
+  IO__OUT_Process   IO__OUT_Process @relation(fields: [output_process_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_8143fa5b4c45ba8e6b564eef7e9")
+
+  @@unique([output_process_id, portfolio_id], map: "IO::OUT_Storage_Session_outputProcess&portfolioId_uq")
+  @@map("IO::OUT_Storage_Session")
+}
+
+model IO__OUT_Storage_Simulation {
+  id         String   @id(map: "IO::OUT_Storage_Simulation_pk") @default(dbgenerated("newsequentialid()"), map: "DF_b580397ea751bb56927defc45a4") @db.UniqueIdentifier
+  fecha      DateTime @db.Date
+  nemo       String   @db.VarChar(255)
+  time       Int
+  valor_base Decimal  @db.Decimal(30, 10)
+  valor_t0   Decimal  @db.Decimal(30, 10)
+  e_values   String   @db.NText
+
+  @@map("IO::OUT_Storage_Simulation")
+}
+
+model IO__OUT_Type {
+  id               String           @id(map: "PK_09b34b5b1f481e853ec6d6bdda7") @db.VarChar(6)
+  name             String           @db.VarChar(255)
+  description      String           @default("", map: "DF_1c3c3e1d12d50d45ecb768adcba") @db.Text
+  definition_table String           @default("", map: "DF_60dbee70fd2ecc2709be566f52c") @db.VarChar(255)
+  storage_table    String           @db.VarChar(255)
+  IO__OUT_Output   IO__OUT_Output[]
+
+  @@unique([name, storage_table], map: "IO::OUT_Type_name&storageTable_uq")
+  @@map("IO::OUT_Type")
+}
+
+model IO__OUT_Type_Session {
+  id                                String                              @id(map: "PK_8e4d2a69a475394ea0166d9c36d") @default(dbgenerated("newsequentialid()"), map: "DF_8e4d2a69a475394ea0166d9c36d") @db.UniqueIdentifier
+  name                              String                              @db.VarChar(255)
+  session_date                      DateTime                            @db.Date
+  scheduled_cron_expression         String?                             @db.VarChar(255)
+  output_id                         String                              @db.UniqueIdentifier
+  user_id                           String                              @db.UniqueIdentifier
+  input_portfolio_id                String                              @db.UniqueIdentifier
+  status_id                         String                              @db.VarChar(3)
+  bcs_price_type                    String?                             @db.VarChar(255)
+  input_market_prices_id            String?                             @db.VarChar(255)
+  labels                            String?                             @db.NText
+  share                             Boolean                             @default(false, map: "DF_000482e113249fc6dda36988ccf")
+  IO__OUT_Output                    IO__OUT_Output                      @relation(fields: [output_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_03cca51b1b9f9248d1c5c766df2")
+  users                             users                               @relation(fields: [user_id], references: [id], onUpdate: NoAction, map: "FK_12d7217c943f0606312383578c1")
+  IO__OUT_Type_Session_Status       IO__OUT_Type_Session_Status         @relation(fields: [status_id], references: [id], onUpdate: NoAction, map: "FK_a9d397cbd1ad7ff589179bcbbaa")
+  IO__INP_Process                   IO__INP_Process                     @relation(fields: [input_portfolio_id], references: [id], onUpdate: NoAction, map: "FK_c9dd645f482b84bc4193060a7c5")
+  IO__OUT_Type_Session_IntradayTime IO__OUT_Type_Session_IntradayTime[]
+  IO__OUT_Type_Session_Scenario     IO__OUT_Type_Session_Scenario[]
+  IO__OUT_Type_Session_TimeStep     IO__OUT_Type_Session_TimeStep[]
+  type_session_intraday_time        type_session_intraday_time[]
+
+  @@unique([output_id, user_id], map: "IO::OUT_Type_Session_output&user_uq")
+  @@map("IO::OUT_Type_Session")
+}
+
+model IO__OUT_Type_Session_IntradayTime {
+  type_session_id            String                     @db.UniqueIdentifier
+  intraday_time_id           String                     @db.UniqueIdentifier
+  IO__OUT_Type_Session       IO__OUT_Type_Session       @relation(fields: [type_session_id], references: [id], onDelete: Cascade, map: "FK_344f4f62ee258e34144018ad01f")
+  Platform__CMN_IntradayTime Platform__CMN_IntradayTime @relation(fields: [intraday_time_id], references: [id], onDelete: Cascade, map: "FK_fd17eef3c337d8967dc4d951f14")
+
+  @@id([type_session_id, intraday_time_id], map: "PK_5733251f9c8028d4df77f4292b6")
+  @@index([type_session_id], map: "IDX_344f4f62ee258e34144018ad01")
+  @@index([intraday_time_id], map: "IDX_fd17eef3c337d8967dc4d951f1")
+  @@map("IO::OUT_Type_Session_IntradayTime")
+}
+
+model IO__OUT_Type_Session_Scenario {
+  type_session_id        String                 @db.UniqueIdentifier
+  scenario_id            String                 @db.UniqueIdentifier
+  IO__OUT_Type_Session   IO__OUT_Type_Session   @relation(fields: [type_session_id], references: [id], onDelete: Cascade, map: "FK_829070501d5d89d135d900c71ca")
+  Scenario__SCN_Scenario Scenario__SCN_Scenario @relation(fields: [scenario_id], references: [id], onDelete: Cascade, map: "FK_a17af262378d68fb6a6eb5729aa")
+
+  @@id([type_session_id, scenario_id], map: "PK_7900f2c3086939ca23979180f8f")
+  @@index([type_session_id], map: "IDX_829070501d5d89d135d900c71c")
+  @@index([scenario_id], map: "IDX_a17af262378d68fb6a6eb5729a")
+  @@map("IO::OUT_Type_Session_Scenario")
+}
+
+model IO__OUT_Type_Session_Status {
+  id                   String                 @id(map: "PK_9ec4454f2c9f77874608377a07b") @db.VarChar(3)
+  name                 String                 @db.VarChar(255)
+  IO__OUT_Type_Session IO__OUT_Type_Session[]
+
+  @@map("IO::OUT_Type_Session_Status")
+}
+
+model IO__OUT_Type_Session_TimeStep {
+  id                     String                 @id(map: "PK_6cce5bdce7daf4add36c782df0e") @default(dbgenerated("newsequentialid()"), map: "DF_6cce5bdce7daf4add36c782df0e") @db.UniqueIdentifier
+  relative_starting_day  Int
+  relative_finishing_day Int
+  interval               Int
+  task_id                String                 @db.UniqueIdentifier
+  interval_time_unit_id  String                 @db.VarChar(3)
+  IO__OUT_Type_Session   IO__OUT_Type_Session   @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_2e080abce87b2176a3500014f13")
+  Platform__CMN_TimeUnit Platform__CMN_TimeUnit @relation(fields: [interval_time_unit_id], references: [id], onUpdate: NoAction, map: "FK_efd373f005ae569bde445adf94d")
+
+  @@map("IO::OUT_Type_Session_TimeStep")
+}
+
+model Market__INS_Instrument {
+  id                String @id(map: "PK_82bd7c75a4d1ded0a5e1da7219e") @default(dbgenerated("newsequentialid()"), map: "DF_82bd7c75a4d1ded0a5e1da7219e") @db.UniqueIdentifier
+  mnemonic          String @unique(map: "Market::INS_Instrument_mnemonic_uq") @db.VarChar(255)
+  type_id           String @db.VarChar(3)
+  classification_id String @db.VarChar(2)
+
+  @@map("Market::INS_Instrument")
+}
+
+model migrations {
+  id        Int    @id(map: "PK_8c82d7f526340ab734260ea46be") @default(autoincrement())
+  timestamp BigInt
+  name      String @db.VarChar(255)
+}
+
+model navigations {
+  navigationId       Int           @id(map: "PK_79822ef1c1c9387eeef2bfc172b") @default(autoincrement())
+  id                 String        @unique(map: "UQ_3f38689f82ca58a9ed44bc560ae") @db.NVarChar(500)
+  title              String?       @db.NVarChar(255)
+  translate          String?       @db.NText
+  subtitle           String?       @db.NVarChar(255)
+  url                String?       @db.NVarChar(255)
+  type               String?       @db.NVarChar(255)
+  icon               String?       @db.NVarChar(255)
+  disabled           Boolean?
+  active             Boolean?
+  badge              String?       @db.NText
+  neededPermissions  String?       @db.NText
+  neededRoles        String?       @db.NText
+  componentConfig    String?       @db.NText
+  createdAt          DateTime      @default(now(), map: "DF_0e1df193dd93d767d89c81e623b")
+  updatedAt          DateTime      @default(now(), map: "DF_e14150a8c4ff2bc536d05ec006c")
+  mpath              String?       @default("", map: "DF_9959b8f4b23951e142f8758ad36") @db.NVarChar(255)
+  parentNavigationId Int?
+  navigations        navigations?  @relation("navigationsTonavigations", fields: [parentNavigationId], references: [navigationId], onDelete: NoAction, onUpdate: NoAction, map: "FK_42644ac0a872b695b2e418aefb0")
+  other_navigations  navigations[] @relation("navigationsTonavigations")
+}
+
+model Participant__CMP_Company {
+  id                      String                   @id(map: "PK_35aae0c8649fec95c91582fdc93") @default(dbgenerated("newsequentialid()"), map: "DF_35aae0c8649fec95c91582fdc93") @db.UniqueIdentifier
+  business_name           String                   @unique(map: "UQ_be7a6971785b42378aaa7114a88") @db.NVarChar(255)
+  person_id               String?                  @db.UniqueIdentifier
+  Participant__PER_Person Participant__PER_Person? @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_0d8489c852a689218b1c22115b5")
+
+  @@map("Participant::CMP_Company")
+}
+
+model Participant__PER_Email {
+  id                      String                   @id(map: "PK_e04a1e302a9afb06ebfc033c7f2") @default(dbgenerated("newsequentialid()"), map: "DF_e04a1e302a9afb06ebfc033c7f2") @db.UniqueIdentifier
+  email                   String                   @unique(map: "UQ_0852b7baaaa7a37afffcbbdee22") @db.NVarChar(255)
+  person_id               String?                  @db.UniqueIdentifier
+  Participant__PER_Person Participant__PER_Person? @relation(fields: [person_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_a11ffa46d541fcd0f0386a3e444")
+
+  @@map("Participant::PER_Email")
+}
+
+model Participant__PER_Person {
+  id                       String                     @id(map: "PK_b5a3ad11bd82923c1da71a7467e") @default(dbgenerated("newsequentialid()"), map: "DF_b5a3ad11bd82923c1da71a7467e") @db.UniqueIdentifier
+  first_name               String                     @db.NVarChar(255)
+  last_name                String                     @db.NVarChar(255)
+  Participant__CMP_Company Participant__CMP_Company[]
+  Participant__PER_Email   Participant__PER_Email[]
+
+  @@map("Participant::PER_Person")
+}
+
+model Participant__USR_Configuration {
+  id                  String   @id(map: "PK_68ddb4c7986d734524a030d0289") @default(dbgenerated("newsequentialid()"), map: "DF_68ddb4c7986d734524a030d0289") @db.UniqueIdentifier
+  parameter_code      String   @db.NVarChar(255)
+  parameter_value     String   @db.NVarChar(2048)
+  parameter_data_type String   @db.NVarChar(50)
+  validations         String?  @db.NText
+  description         String   @db.NVarChar(255)
+  updatedAt           DateTime @default(now(), map: "DF_131c75acb83ac2e855125b22387")
+  userId              String?  @db.UniqueIdentifier
+  users               users?   @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5d9a876df5b9b5fa4d5069620c7")
+
+  @@map("Participant::USR_Configuration")
+}
+
+model permissions {
+  id                String              @id(map: "PK_920331560282b8bd21bb02290df") @default(dbgenerated("newsequentialid()"), map: "DF_920331560282b8bd21bb02290df") @db.UniqueIdentifier
+  name              String              @db.NVarChar(255)
+  description       String              @db.NVarChar(255)
+  createdAt         DateTime            @default(now(), map: "DF_da04f89054f39981438894dfe30")
+  updatedAt         DateTime            @default(now(), map: "DF_14936cb23d7de4c7b31b5cef053")
+  roles_permissions roles_permissions[]
+  users_permissions users_permissions[]
+}
+
+model Platform__CMN_IntradayTime {
+  id                                String                              @id(map: "PK_23d0e4e88100c29c0dff8a27cce") @default(dbgenerated("newsequentialid()"), map: "DF_23d0e4e88100c29c0dff8a27cce") @db.UniqueIdentifier
+  time                              DateTime                            @unique(map: "Platform::CMN_IntradayTime_time_uq") @db.Time
+  IO__OUT_Type_Session_IntradayTime IO__OUT_Type_Session_IntradayTime[]
+  type_session_intraday_time        type_session_intraday_time[]
+
+  @@map("Platform::CMN_IntradayTime")
+}
+
+model Platform__CMN_TimeUnit {
+  id                            String                          @id(map: "PK_8ea4a8b2313f183935e02127633") @db.VarChar(3)
+  name                          String                          @unique(map: "Platform::CMN_TimeUnit_name_uq") @db.VarChar(255)
+  IO__OUT_Type_Session_TimeStep IO__OUT_Type_Session_TimeStep[]
+
+  @@map("Platform::CMN_TimeUnit")
+}
+
+model Platform__HLP_Category {
+  id                 String               @id(map: "PK_c473aa62a38461ae1e5aeec8715") @db.VarChar(3)
+  name               String               @db.VarChar(255)
+  Platform__HLP_Help Platform__HLP_Help[]
+
+  @@map("Platform::HLP_Category")
+}
+
+model Platform__HLP_Documentation {
+  id                                                                                                                 String                                @id(map: "PK_cf5d059b0191433e8c89199fc82") @default(dbgenerated("newsequentialid()"), map: "DF_cf5d059b0191433e8c89199fc82") @db.UniqueIdentifier
+  header                                                                                                             String                                @db.VarChar(255)
+  content                                                                                                            String                                @db.Text
+  position                                                                                                           Int
+  created_at                                                                                                         DateTime                              @default(now(), map: "DF_3176c198448a4f954d9d456f847") @db.DateTime
+  updated_at                                                                                                         DateTime                              @default(now(), map: "DF_91852e0700e2aa3962d8541ba8b") @db.DateTime
+  language                                                                                                           String                                @db.VarChar(2)
+  depth                                                                                                              Int
+  user_id                                                                                                            String?                               @db.UniqueIdentifier
+  parent_id                                                                                                          String?                               @db.UniqueIdentifier
+  Platform__HLP_Documentation                                                                                        Platform__HLP_Documentation?          @relation("Platform__HLP_DocumentationToPlatform__HLP_Documentation", fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_dc05a0d91e4c3f62b11d58e14d6")
+  other_Platform__HLP_Documentation                                                                                  Platform__HLP_Documentation[]         @relation("Platform__HLP_DocumentationToPlatform__HLP_Documentation")
+  AccessControl__USR_User                                                                                            AccessControl__USR_User?              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_fa89bfac2b8a11103b5c5d5d691")
+  Platform__HLP_Documentation_closure_Platform__HLP_Documentation_closure_id_ancestorToPlatform__HLP_Documentation   Platform__HLP_Documentation_closure[] @relation("Platform__HLP_Documentation_closure_id_ancestorToPlatform__HLP_Documentation")
+  Platform__HLP_Documentation_closure_Platform__HLP_Documentation_closure_id_descendantToPlatform__HLP_Documentation Platform__HLP_Documentation_closure[] @relation("Platform__HLP_Documentation_closure_id_descendantToPlatform__HLP_Documentation")
+
+  @@map("Platform::HLP_Documentation")
+}
+
+model Platform__HLP_Documentation_closure {
+  id_ancestor                                                                                                String                      @db.UniqueIdentifier
+  id_descendant                                                                                              String                      @db.UniqueIdentifier
+  Platform__HLP_Documentation_Platform__HLP_Documentation_closure_id_ancestorToPlatform__HLP_Documentation   Platform__HLP_Documentation @relation("Platform__HLP_Documentation_closure_id_ancestorToPlatform__HLP_Documentation", fields: [id_ancestor], references: [id], onUpdate: NoAction, map: "FK_605f9fbbe29c40c3bc9e4d35a55")
+  Platform__HLP_Documentation_Platform__HLP_Documentation_closure_id_descendantToPlatform__HLP_Documentation Platform__HLP_Documentation @relation("Platform__HLP_Documentation_closure_id_descendantToPlatform__HLP_Documentation", fields: [id_descendant], references: [id], onUpdate: NoAction, map: "FK_6965ae3d6a36dd3861f885ac1d1")
+
+  @@id([id_ancestor, id_descendant], map: "PK_0f7d106523b52a1335f836413c3")
+  @@index([id_ancestor], map: "IDX_605f9fbbe29c40c3bc9e4d35a5")
+  @@index([id_descendant], map: "IDX_6965ae3d6a36dd3861f885ac1d")
+  @@map("Platform::HLP_Documentation_closure")
+}
+
+model Platform__HLP_Help {
+  id                      String                   @id(map: "PK_dcaf6fd49c91b4fd299a56d0fff") @default(dbgenerated("newsequentialid()"), map: "DF_dcaf6fd49c91b4fd299a56d0fff") @db.UniqueIdentifier
+  subject                 String                   @db.VarChar(255)
+  message                 String                   @db.Text
+  created_at              DateTime                 @default(now(), map: "DF_473866ae7e229e55e46cd66eb4a") @db.DateTime
+  user_id                 String?                  @db.UniqueIdentifier
+  category_id             String?                  @db.VarChar(3)
+  Platform__HLP_Category  Platform__HLP_Category?  @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_5190ae1824182dc6064f91a5336")
+  AccessControl__USR_User AccessControl__USR_User? @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_ad141149b2fa25019595f6d270f")
+  Platform__HLP_HelpFile  Platform__HLP_HelpFile[]
+
+  @@map("Platform::HLP_Help")
+}
+
+model Platform__HLP_HelpFile {
+  id                 String              @id(map: "PK_a4d58c9bde1247efe50b27fc1e1") @default(dbgenerated("newsequentialid()"), map: "DF_a4d58c9bde1247efe50b27fc1e1") @db.UniqueIdentifier
+  name               String              @db.VarChar(255)
+  data               Bytes
+  extension          String              @db.VarChar(3)
+  created_at         DateTime            @default(now(), map: "DF_76ed461322126bd8f4148705273") @db.DateTime
+  help_id            String?             @db.UniqueIdentifier
+  Platform__HLP_Help Platform__HLP_Help? @relation(fields: [help_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_8f47406e8b8163be4d7521d074b")
+
+  @@map("Platform::HLP_HelpFile")
+}
+
+model Playground__PGD_TypeAmalgamation {
+  id                    String                 @id(map: "Playground::PGD_TypeAmalgamation_pk") @default(dbgenerated("newsequentialid()"), map: "DF_cd1be066da786be60e1e1e4d73b") @db.UniqueIdentifier
+  attribute_varchar     String?                @db.VarChar(255)
+  attribute_text        String?                @db.Text
+  attribute_simple_json String?                @db.NText
+  attribute_tinyint     Int?                   @db.TinyInt
+  attribute_simple_enum String?                @db.NVarChar(255)
+  attribute_varbinary   Bytes?
+  attribute_date        DateTime?              @db.Date
+  attribute_datetime    DateTime?              @db.DateTime
+  attribute_int         Int?
+  attribute_float       Float?
+  attribute_numeric     Decimal?               @db.Decimal(30, 10)
+  attribute_decimal     Decimal?               @db.Decimal(30, 10)
+  attribute_time        DateTime?              @db.Time
+  attribute_bigint      BigInt?
+  attribute_uuid        String?                @db.UniqueIdentifier
+  attribute_integer     Int?
+  attribute_value_id    String?                @db.UniqueIdentifier
+  Playground__PGD_Value Playground__PGD_Value? @relation(fields: [attribute_value_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Playground::PGD_TypeAmalgamation_value_fk")
+
+  @@map("Playground::PGD_TypeAmalgamation")
+}
+
+model Playground__PGD_Value {
+  id                               String                             @id(map: "Playground::PGD_Value_pk") @default(dbgenerated("newsequentialid()"), map: "DF_a8f4a769f4adbf920185a320c2c") @db.UniqueIdentifier
+  description                      String                             @db.VarChar(255)
+  dec_p30_s10                      Decimal                            @db.Decimal(30, 10)
+  dec_p26_s8                       Decimal                            @db.Decimal(26, 8)
+  Playground__PGD_TypeAmalgamation Playground__PGD_TypeAmalgamation[]
+
+  @@map("Playground::PGD_Value")
+}
+
+model Reporting__RPT_Classification {
+  id                      String                    @id(map: "PK_afc7517b542a242638093508399") @default(dbgenerated("newsequentialid()"), map: "DF_afc7517b542a242638093508399") @db.UniqueIdentifier
+  name                    String                    @db.VarChar(255)
+  Reporting__RPT_Template Reporting__RPT_Template[]
+
+  @@map("Reporting::RPT_Classification")
+}
+
+model Reporting__RPT_Element {
+  id                              String                            @id(map: "PK_8d07a3931ec6a494bd8ac871d57") @default(dbgenerated("newsequentialid()"), map: "DF_8d07a3931ec6a494bd8ac871d57") @db.UniqueIdentifier
+  name                            String                            @db.VarChar(255)
+  description                     String                            @db.VarChar(255)
+  type                            String                            @db.NVarChar(255)
+  payload_schema                  String?                           @db.NText
+  Reporting__RPT_Template_Element Reporting__RPT_Template_Element[]
+
+  @@map("Reporting::RPT_Element")
+}
+
+model Reporting__RPT_Element_Configuration {
+  id                      Int                      @id(map: "PK_762135c30e0e8f5b4abc118a765") @default(autoincrement())
+  type                    String                   @db.NVarChar(255)
+  configuration           String?                  @db.NText
+  layoutId                String?                  @db.UniqueIdentifier
+  userId                  String?                  @db.UniqueIdentifier
+  AccessControl__USR_User AccessControl__USR_User? @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_c0c1d0defba28231872a1692e78")
+  Reporting__RPT_Layout   Reporting__RPT_Layout?   @relation(fields: [layoutId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_f2d9590e408fec1567cef501acd")
+
+  @@map("Reporting::RPT_Element_Configuration")
+}
+
+model Reporting__RPT_Layout {
+  id                                   String                                 @id(map: "PK_c494386f6a2531377c6127cb2e7") @default(dbgenerated("newsequentialid()"), map: "DF_c494386f6a2531377c6127cb2e7") @db.UniqueIdentifier
+  name                                 String                                 @db.VarChar(255)
+  description                          String                                 @db.VarChar(255)
+  componentConfig                      String?                                @db.NText
+  Reporting__RPT_Element_Configuration Reporting__RPT_Element_Configuration[]
+  Reporting__RPT_Template              Reporting__RPT_Template[]
+
+  @@map("Reporting::RPT_Layout")
+}
+
+model Reporting__RPT_Metric_Type {
+  id                             String                           @id(map: "Reporting::RPT_Metric_Type_pk") @db.VarChar(255)
+  description                    String                           @db.VarChar(255)
+  payload_json_schema            String?                          @db.NText
+  Reporting__RPT_Template_Metric Reporting__RPT_Template_Metric[]
+
+  @@map("Reporting::RPT_Metric_Type")
+}
+
+model Reporting__RPT_Template {
+  id                              String                            @id(map: "PK_83e894d02e6b501f9ce9c270a09") @default(dbgenerated("newsequentialid()"), map: "DF_83e894d02e6b501f9ce9c270a09") @db.UniqueIdentifier
+  name                            String                            @db.VarChar(255)
+  description                     String                            @db.VarChar(255)
+  is_predefined                   Int                               @db.TinyInt
+  user_id                         String?                           @db.UniqueIdentifier
+  layout_id                       String?                           @db.UniqueIdentifier
+  classification_id               String?                           @db.UniqueIdentifier
+  payload                         String?                           @db.NText
+  Reporting__RPT_Classification   Reporting__RPT_Classification?    @relation(fields: [classification_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Reporting::RPT_Template_classification_fk")
+  Reporting__RPT_Layout           Reporting__RPT_Layout?            @relation(fields: [layout_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Reporting::RPT_Template_layout_fk")
+  AccessControl__USR_User         AccessControl__USR_User?          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Reporting::RPT_Template_user_fk")
+  Reporting__RPT_Template_Element Reporting__RPT_Template_Element[]
+  Reporting__RPT_Template_Metric  Reporting__RPT_Template_Metric[]
+  Reporting__RPT_Template_Powerbi Reporting__RPT_Template_Powerbi[]
+
+  @@map("Reporting::RPT_Template")
+}
+
+model Reporting__RPT_Template_Element {
+  id                      String                  @id(map: "PK_d2e0732eb1daf610f07e01f1cb4") @default(dbgenerated("newsequentialid()"), map: "DF_d2e0732eb1daf610f07e01f1cb4") @db.UniqueIdentifier
+  position                Int
+  visibility              Int                     @default(1, map: "DF_bc956d8333493b7e9e39a08e42b") @db.TinyInt
+  report_template_id      String                  @db.UniqueIdentifier
+  element_id              String?                 @db.UniqueIdentifier
+  Reporting__RPT_Element  Reporting__RPT_Element? @relation(fields: [element_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Reporting::RPT_Template_Element_element_fk")
+  Reporting__RPT_Template Reporting__RPT_Template @relation(fields: [report_template_id], references: [id], onUpdate: NoAction, map: "Reporting::RPT_Template_Element_template_fk")
+
+  @@map("Reporting::RPT_Template_Element")
+}
+
+model Reporting__RPT_Template_Metric {
+  id                         String                     @id(map: "Reporting::RPT_Template_Metric_pk") @default(dbgenerated("newsequentialid()"), map: "DF_085e66e7a05d24484f7c02b4443") @db.UniqueIdentifier
+  payload                    String?                    @db.NText
+  metric_type_id             String                     @db.VarChar(255)
+  report_template_id         String                     @db.UniqueIdentifier
+  Reporting__RPT_Metric_Type Reporting__RPT_Metric_Type @relation(fields: [metric_type_id], references: [id], onUpdate: NoAction, map: "Reporting::RPT_Template_Metric_metric_type_fk")
+  Reporting__RPT_Template    Reporting__RPT_Template    @relation(fields: [report_template_id], references: [id], onUpdate: NoAction, map: "Reporting::RPT_Template_Metric_report_template_fk")
+
+  @@map("Reporting::RPT_Template_Metric")
+}
+
+model Reporting__RPT_Template_Powerbi {
+  id                      String                  @id(map: "PK_1c695e409c51dd32b776e424947") @default(dbgenerated("newsequentialid()"), map: "DF_1c695e409c51dd32b776e424947") @db.UniqueIdentifier
+  json                    String                  @db.Text
+  report_template_id      String                  @db.UniqueIdentifier
+  Reporting__RPT_Template Reporting__RPT_Template @relation(fields: [report_template_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_48a7f617847c49e8cf108a6d963")
+
+  @@map("Reporting::RPT_Template_Powerbi")
+}
+
+model roles {
+  id                String              @id(map: "PK_c1433d71a4838793a49dcad46ab") @default(dbgenerated("newsequentialid()"), map: "DF_c1433d71a4838793a49dcad46ab") @db.UniqueIdentifier
+  name              String              @db.NVarChar(255)
+  description       String              @db.NVarChar(255)
+  isAdmin           Boolean             @default(false, map: "DF_4b83870e2f191978f0374af71a5")
+  createdAt         DateTime            @default(now(), map: "DF_4d018866397b1e7e78d03b45662")
+  updatedAt         DateTime            @default(now(), map: "DF_c13070745ded32a88c920015f7e")
+  roles_permissions roles_permissions[]
+  users_roles       users_roles[]
+}
+
+model roles_permissions {
+  roleId       String      @db.UniqueIdentifier
+  permissionId String      @db.UniqueIdentifier
+  roles        roles       @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "FK_28bf280551eb9aa82daf1e156d9")
+  permissions  permissions @relation(fields: [permissionId], references: [id], onDelete: Cascade, map: "FK_31cf5c31d0096f706e3ba3b1e82")
+
+  @@id([roleId, permissionId], map: "PK_5829481fc2a13d85b9b6bf3bd53")
+  @@index([roleId], map: "IDX_28bf280551eb9aa82daf1e156d")
+  @@index([permissionId], map: "IDX_31cf5c31d0096f706e3ba3b1e8")
+}
+
+model Scenario__SCN_Factor {
+  id                             String                           @id(map: "PK_c6d9d58c99ada55851b405a7924") @default(dbgenerated("newsequentialid()"), map: "DF_c6d9d58c99ada55851b405a7924") @db.UniqueIdentifier
+  family_type                    String                           @db.NVarChar(255)
+  short_name                     String                           @unique(map: "UQ_c65404dd8809b639100d4940cfe") @db.NVarChar(255)
+  long_name                      String                           @db.NVarChar(255)
+  formatted_name                 String                           @db.NVarChar(255)
+  Scenario__SCN_ScenarioFactor   Scenario__SCN_ScenarioFactor[]
+  Sceneracio__SCN_ScenarioFactor Sceneracio__SCN_ScenarioFactor[]
+
+  @@map("Scenario::SCN_Factor")
+}
+
+model Scenario__SCN_Scenario {
+  id                             String                           @id(map: "PK_df08793ed2a764a5dc1fdddd446") @default(dbgenerated("newsequentialid()"), map: "DF_df08793ed2a764a5dc1fdddd446") @db.UniqueIdentifier
+  name                           String                           @unique(map: "UQ_9e9fd748a7b3a41dc50b16360fe") @db.NVarChar(255)
+  type                           String                           @db.NVarChar(255)
+  number_scenarios               Int                              @default(1, map: "DF_b584373dcaee54d01eca5f51175")
+  time_horizon                   Int                              @default(1, map: "DF_98bf0e46c79f4cabafd97c02f54")
+  userId                         String?                          @db.UniqueIdentifier
+  createdAt                      DateTime                         @default(now(), map: "DF_f8417809fa312df7eea52c02316")
+  IO__OUT_Type_Session_Scenario  IO__OUT_Type_Session_Scenario[]
+  users                          users?                           @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_8498b51468a8a249eb3031fd1b6")
+  Scenario__SCN_ScenarioFactor   Scenario__SCN_ScenarioFactor[]
+  Sceneracio__SCN_ScenarioFactor Sceneracio__SCN_ScenarioFactor[]
+
+  @@map("Scenario::SCN_Scenario")
+}
+
+model Scenario__SCN_ScenarioFactor {
+  id                     String                  @id(map: "PK_74881019ed38cfea321b5dba4bb") @default(dbgenerated("newsequentialid()"), map: "DF_74881019ed38cfea321b5dba4bb") @db.UniqueIdentifier
+  scenarioId             String?                 @db.UniqueIdentifier
+  factorId               String?                 @db.UniqueIdentifier
+  shock                  Decimal                 @default(0, map: "DF_6613de3f600f1d07e30ec01fe25") @db.Decimal(26, 8)
+  Scenario__SCN_Factor   Scenario__SCN_Factor?   @relation(fields: [factorId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_37bbf54455dbf6b580a4cf0ae4b")
+  Scenario__SCN_Scenario Scenario__SCN_Scenario? @relation(fields: [scenarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_c28b3a0d497b84aef3d0a34cac1")
+
+  @@map("Scenario::SCN_ScenarioFactor")
+}
+
+model Sceneracio__SCN_ScenarioFactor {
+  id                     String                  @id(map: "PK_73573ea66d6b3bd186d7840c4a3") @default(dbgenerated("newsequentialid()"), map: "DF_73573ea66d6b3bd186d7840c4a3") @db.UniqueIdentifier
+  shock                  Int                     @default(0, map: "DF_a4e0cd517eb81c98b721e723503")
+  scenarioId             String?                 @db.UniqueIdentifier
+  factorId               String?                 @db.UniqueIdentifier
+  Scenario__SCN_Scenario Scenario__SCN_Scenario? @relation(fields: [scenarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_24e73ccbab7752a3dee4b69c116")
+  Scenario__SCN_Factor   Scenario__SCN_Factor?   @relation(fields: [factorId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "FK_f1dbf9be47b9f4d1b60117a7bd7")
+
+  @@map("Sceneracio::SCN_ScenarioFactor")
+}
+
+model type_session_intraday_time {
+  type_session_id            String                     @db.UniqueIdentifier
+  intraday_time_id           String                     @db.UniqueIdentifier
+  IO__OUT_Type_Session       IO__OUT_Type_Session       @relation(fields: [type_session_id], references: [id], onDelete: Cascade, map: "FK_01fcc606f6287f66d5d47817ade")
+  Platform__CMN_IntradayTime Platform__CMN_IntradayTime @relation(fields: [intraday_time_id], references: [id], onDelete: Cascade, map: "FK_9eb490f10becc9d468a85647bbc")
+
+  @@id([type_session_id, intraday_time_id], map: "PK_c5e34582e3d9c90d09c30524a4e")
+  @@index([type_session_id], map: "IDX_01fcc606f6287f66d5d47817ad")
+  @@index([intraday_time_id], map: "IDX_9eb490f10becc9d468a85647bb")
+}
+
+model users {
+  id                             String                           @id(map: "PK_a3ffb1c0c8416b9fc6f907b7433") @default(dbgenerated("newsequentialid()"), map: "DF_a3ffb1c0c8416b9fc6f907b7433") @db.UniqueIdentifier
+  photoUrl                       String?                          @db.NVarChar(255)
+  email                          String                           @unique(map: "UQ_97672ac88f789774dd47f7c8be3") @db.NVarChar(255)
+  password                       String                           @db.NVarChar(255)
+  createdAt                      DateTime                         @default(now(), map: "DF_204e9b624861ff4a5b268192101")
+  updatedAt                      DateTime                         @default(now(), map: "DF_0f5cbe00928ba4489cc7312573b")
+  IO__INP_Files                  IO__INP_Files[]
+  IO__INP_Process                IO__INP_Process[]
+  IO__OUT_Type_Session           IO__OUT_Type_Session[]
+  Participant__USR_Configuration Participant__USR_Configuration[]
+  Scenario__SCN_Scenario         Scenario__SCN_Scenario[]
+  users_permissions              users_permissions[]
+  users_roles                    users_roles[]
+}
+
+model users_permissions {
+  userId       String      @db.UniqueIdentifier
+  permissionId String      @db.UniqueIdentifier
+  users        users       @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_4180c1a3fdc77c74e9ad3a387f2")
+  permissions  permissions @relation(fields: [permissionId], references: [id], onDelete: Cascade, map: "FK_a7fc06687add3a4da3ddbbb406f")
+
+  @@id([userId, permissionId], map: "PK_37136eea4d2e5cd360a7c7cfe10")
+  @@index([userId], map: "IDX_4180c1a3fdc77c74e9ad3a387f")
+  @@index([permissionId], map: "IDX_a7fc06687add3a4da3ddbbb406")
+}
+
+model users_roles {
+  userId String @db.UniqueIdentifier
+  roleId String @db.UniqueIdentifier
+  roles  roles  @relation(fields: [roleId], references: [id], onDelete: Cascade, map: "FK_4fb14631257670efa14b15a3d86")
+  users  users  @relation(fields: [userId], references: [id], onDelete: Cascade, map: "FK_776b7cf9330802e5ef5a8fb18dc")
+
+  @@id([userId, roleId], map: "PK_a472bd14ea5d26f611025418d57")
+  @@index([roleId], map: "IDX_4fb14631257670efa14b15a3d8")
+  @@index([userId], map: "IDX_776b7cf9330802e5ef5a8fb18d")
+}
