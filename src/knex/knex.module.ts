@@ -6,6 +6,8 @@ import { AmalgamationService } from './services/amalgamation.service';
 import { KnexBenchmarkService } from './knex-benchmark.service';
 import { Connections } from './enums/connections.enum';
 import { KnexMultiDatasourceDemoService } from './knex-multi-datasource-demo.service';
+import { KnexCachingDemoService } from './knex-caching-demo.service';
+import { KnexAdvancedQueryingService } from './knex-advanced-querying.service';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { KnexMultiDatasourceDemoService } from './knex-multi-datasource-demo.ser
     AmalgamationService,
     KnexTransactionDemoService,
     KnexMultiDatasourceDemoService,
+    KnexCachingDemoService,
+    KnexAdvancedQueryingService,
     KnexBenchmarkService,
   ],
 })
