@@ -13,7 +13,6 @@ export class KnexTransactionDemoService implements Demo {
   constructor(
     @InjectKnex(Connections.AdventureWorksLT2019_Knex)
     private readonly knex: Knex,
-    private readonly amalgamationService: AmalgamationService,
   ) {}
 
   async run(): Promise<void> {
