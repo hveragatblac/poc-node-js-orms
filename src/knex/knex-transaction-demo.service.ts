@@ -73,7 +73,7 @@ export class KnexTransactionDemoService implements Demo {
     // this.logger.log(
     //   `DeleteMany got ${
     //     removedAmalgamations.length
-    //   } amalgamations, first 2 ${removedAmalgamations.slice(0, 2)}`,
+    //   } amalgamations, first 2 ${inspect(removedAmalgamations.slice(0, 2))}`,
     // );
   }
 }
