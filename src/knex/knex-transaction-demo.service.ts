@@ -18,6 +18,7 @@ export class KnexTransactionDemoService implements Demo {
   async run(): Promise<void> {
     await this.doTransactionPromiseAware();
     await this.doTransactionDelegable();
+    await this.doTransactionProvided();
     this.logger.log(`Finished ${KnexTransactionDemoService.name}`);
   }
 
@@ -74,6 +75,42 @@ export class KnexTransactionDemoService implements Demo {
       );
     } catch (e) {
       this.logger.error(`Failed doTransactionDelegable`, e);
+      if (tx) {
+        await tx.rollback();
+        this.logger.log(`Rolled back`);
+      }
+    }
+  }
+
+  private async doTransactionProvided() {
+    const txProvider = this.knex.transactionProvider({
+      isolationLevel: 'read committed',
+      readOnly: false,
+    });
+    const payload = [];
+    let tx;
+    try {
+      tx = await txProvider();
+      await tx
+        .withSchema('SalesLT')
+        .insert(generateAmagamationKnex())
+        .into('Amalgamation')
+        .returning('*')
+        .then((rows) => payload.push(...rows));
+      await tx
+        .withSchema('SalesLT')
+        .insert(generateAmagamationKnex())
+        .into('Amalgamation')
+        .returning('*')
+        .then((rows) => payload.push(...rows));
+      await tx.commit();
+      this.logger.log(
+        `Inserted 2 amalgamations separately within a single provided transaction, got ${inspect(
+          payload,
+        )}`,
+      );
+    } catch (e) {
+      this.logger.error(`Failed doTransactionProvided`, e);
       if (tx) {
         await tx.rollback();
         this.logger.log(`Rolled back`);
