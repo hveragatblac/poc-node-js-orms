@@ -33,7 +33,8 @@ export const random = {
 };
 
 // TODO: Some fail because of unique name constraint
-export const generateAmalgamation = (): Prisma.AmalgamationCreateInput => {
+// TODO: Should I type this?
+export const generateAmalgamation = (): any => {
   return {
     name: faker.string.alphanumeric({
       casing: 'mixed',

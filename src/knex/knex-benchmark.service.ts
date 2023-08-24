@@ -2,7 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { AmalgamationService } from './services/amalgamation.service';
 import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
 import { generateAmalgamation } from '../@common/utils/random.util';
-import { inspect } from 'node:util';
+
+function generateAmagamationKnex() {
+  const amalgamation = generateAmalgamation();
+  amalgamation.fBigint = (amalgamation.fBigint as bigint).toString(10);
+  amalgamation.fFloat = (amalgamation.fFloat as number).toExponential();
+  amalgamation.fReal = (amalgamation.fReal as number).toExponential();
+  return amalgamation;
+}
 
 @Injectable()
 export class KnexBenchmarkService implements Benchmarkable {
@@ -13,12 +20,9 @@ export class KnexBenchmarkService implements Benchmarkable {
       {
         name: 'Single insert',
         task: async (dto) => {
-          dto.fBigint = (dto.fBigint as bigint).toString(10);
-          dto.fFloat = (dto.fFloat as number).toExponential();
-          dto.fReal = (dto.fReal as number).toExponential();
           await this.amalgamationService.saveOne(dto);
         },
-        generateArguments: generateAmalgamation,
+        generateArguments: generateAmagamationKnex,
       },
       // {
       //   name: 'Bulk insert',
