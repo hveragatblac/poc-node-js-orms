@@ -44,7 +44,7 @@ export class KnexMultiDatasourceDemoService implements Demo {
     const orders = await this.adventureWorks
       .select('order.*', 'user.id as joinedUserId')
       .from('transactional.Order as order')
-      .innerJoin('base.User as user', 'user.id', 'order.userId')
+      .innerJoin('base.User as user', 'user.id', 'order.userId');
     this.logger.log(
       `Got ${inspect(orders)} from schemas: transactional and base`,
     );
