@@ -2,6 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Demo } from '../@common/types/demo.type';
 import { InjectKnex, Knex } from 'nestjs-knex';
 import { AmalgamationService } from './services/amalgamation.service';
+import { generateAmagamationKnex } from './knex-benchmark.service';
+import { inspect } from 'node:util';
 
 @Injectable()
 export class KnexTransactionDemoService implements Demo {
@@ -14,66 +16,68 @@ export class KnexTransactionDemoService implements Demo {
   ) {}
 
   async run(): Promise<void> {
-    // const dto = generateAmagamationKnex();
-    // const amalgamation = await this.amalgamationService.saveOne(dto);
-    // this.logger.log(`Inserted ${inspect(amalgamation)}`);
-    // const names = new Set();
-    // const dtos = faker.helpers.uniqueArray(() => {
-    //   let dto;
-    //   do {
-    //     dto = generateAmagamationKnex();
-    //   } while (names.has(dto.name));
-    //   names.add(dto.name);
-    //   return dto;
-    // }, 2000);
-    // const amalgamations = await this.amalgamationService.saveMany(dtos);
-    // this.logger.log(
-    //   `Inserted ${amalgamations.length} amalgamations, first 4 are ${inspect(
-    //     amalgamations.slice(0, 4),
-    //   )}`,
-    // );
-    // const amalgamationFirst = await this.amalgamationService.findFirst({
-    //   fBit: 0,
-    // });
-    // this.logger.log(`FindFirst got ${inspect(amalgamationFirst)}`);
-    //
-    // const amalgamationUnique = await this.amalgamationService.findUnique({
-    //   fBit: 1,
-    // });
-    // this.logger.log(`FindUnique got ${inspect(amalgamationUnique)}`);
-    //
-    // const amalgamations = await this.amalgamationService.find({});
-    // this.logger.log(
-    //   `Find got ${amalgamations.length} amalgamations, first 2 are ${inspect(
-    //     amalgamations.slice(0, 2),
-    //   )}`,
-    // );
-    // const amalgamation = await this.amalgamationService.updateFirst(
-    //   { fXml: '<tag>poc</tag>' },
-    //   { fBit: 0 },
-    // );
-    // this.logger.log(`UpdateFirst got ${inspect(amalgamation)}`);
-    // const amalgamations = await this.amalgamationService.updateMany(
-    //   { fXml: '<tag>fBit is true</tag>' },
-    //   { fBit: 1 },
-    // );
-    // this.logger.log(
-    //   `UpdateMany got ${
-    //     amalgamations.length
-    //   } amalgamations, first 2 are${inspect(amalgamations.slice(0, 2))}`,
-    // );
-    // const removedAmalgamation = await this.amalgamationService.deleteFirst({
-    //   fTinyint: 151,
-    // });
-    // this.logger.log(`DeleteFirst got ${inspect(removedAmalgamation)}`);
-    //
-    // const removedAmalgamations = await this.amalgamationService.deleteMany({
-    //   fBit: 1,
-    // });
-    // this.logger.log(
-    //   `DeleteMany got ${
-    //     removedAmalgamations.length
-    //   } amalgamations, first 2 ${inspect(removedAmalgamations.slice(0, 2))}`,
-    // );
+    await this.doTransactionPromiseAware();
+    await this.doTransactionDelegable();
+    this.logger.log(`Finished ${KnexTransactionDemoService.name}`);
+  }
+
+  private async doTransactionPromiseAware() {
+    const payload = await this.knex.transaction(
+      async (tx) => {
+        const amalgamation1 = await tx
+          .withSchema('SalesLT')
+          .insert(generateAmagamationKnex())
+          .into('Amalgamation')
+          .returning('*');
+        const amalgamation2 = await tx
+          .withSchema('SalesLT')
+          .insert(generateAmagamationKnex())
+          .into('Amalgamation')
+          .returning('*');
+        return [...amalgamation1, ...amalgamation2];
+      },
+      {
+        isolationLevel: 'read committed',
+      },
+    );
+    this.logger.log(
+      `Inserted 2 amalgamations separately within a single promise aware transaction got ${inspect(
+        payload,
+      )}`,
+    );
+  }
+
+  private async doTransactionDelegable() {
+    let tx;
+    const payload = [];
+    try {
+      tx = await this.knex.transaction({ isolationLevel: 'read committed' });
+      await this.knex
+        .withSchema('SalesLT')
+        .insert(generateAmagamationKnex())
+        .into('Amalgamation')
+        .transacting(tx)
+        .returning('*')
+        .then((rows) => payload.push(...rows));
+      await this.knex
+        .withSchema('SalesLT')
+        .insert(generateAmagamationKnex())
+        .into('Amalgamation')
+        .transacting(tx)
+        .returning('*')
+        .then((rows) => payload.push(...rows));
+      await tx.commit();
+      this.logger.log(
+        `Inserted 2 amalgamations separately within a single delegable transaction, got ${inspect(
+          payload,
+        )}`,
+      );
+    } catch (e) {
+      this.logger.error(`Failed doTransactionDelegable`, e);
+      if (tx) {
+        await tx.rollback();
+        this.logger.log(`Rolled back`);
+      }
+    }
   }
 }
