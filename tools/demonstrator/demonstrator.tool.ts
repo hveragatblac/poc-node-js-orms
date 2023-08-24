@@ -4,6 +4,7 @@ import { Logger } from '@nestjs/common';
 import { inspect } from 'node:util';
 import * as path from 'path';
 import { Demo } from '../../src/@common/types/demo.type';
+import * as process from 'process';
 
 function pluckServiceNameFromPath(servicePath: string) {
   return path
@@ -28,6 +29,7 @@ function pluckServiceNameFromPath(servicePath: string) {
     const type = module[name];
     const instance = app.get<Demo>(type);
     await instance.run();
+    process.exit(0);
   } catch (e) {
     logger.error(e);
     process.exit(1);

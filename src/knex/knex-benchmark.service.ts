@@ -3,7 +3,7 @@ import { AmalgamationService } from './services/amalgamation.service';
 import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
 import { generateAmalgamation } from '../@common/utils/random.util';
 
-function generateAmagamationKnex() {
+export function generateAmagamationKnex() {
   const amalgamation = generateAmalgamation();
   amalgamation.fBigint = (amalgamation.fBigint as bigint).toString(10);
   amalgamation.fFloat = (amalgamation.fFloat as number).toExponential();
