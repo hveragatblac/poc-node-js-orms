@@ -7,12 +7,14 @@ import { KnexModule } from './knex/knex.module';
 import { ConfigModule } from '@nestjs/config';
 import databaseAdventureWorksKnexConfiguration from './@configurations/database-adventure-works-knex.configuration';
 import databaseAdventureWorksObjectionConfiguration from './@configurations/database-adventure-works-objection.configuration';
+import bcsRiesgoKnexConfiguration from './@configurations/bcs-riesgo-knex.configuration';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       load: [
+        bcsRiesgoKnexConfiguration,
         databaseAdventureWorksKnexConfiguration,
         databaseAdventureWorksObjectionConfiguration,
       ],

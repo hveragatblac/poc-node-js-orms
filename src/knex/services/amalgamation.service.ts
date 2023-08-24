@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectKnex, Knex } from 'nestjs-knex';
-import { inspect } from 'node:util';
+import { Connections } from '../enums/connections.enum';
 
 @Injectable()
 export class AmalgamationService {
   constructor(
-    @InjectKnex()
+    @InjectKnex(Connections.AdventureWorksLT2019_Knex)
     private readonly knex: Knex,
   ) {}
 

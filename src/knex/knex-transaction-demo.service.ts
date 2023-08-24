@@ -4,13 +4,14 @@ import { InjectKnex, Knex } from 'nestjs-knex';
 import { AmalgamationService } from './services/amalgamation.service';
 import { generateAmagamationKnex } from './knex-benchmark.service';
 import { inspect } from 'node:util';
+import { Connections } from './enums/connections.enum';
 
 @Injectable()
 export class KnexTransactionDemoService implements Demo {
   private readonly logger = new Logger(KnexTransactionDemoService.name);
 
   constructor(
-    @InjectKnex()
+    @InjectKnex(Connections.AdventureWorksLT2019_Knex)
     private readonly knex: Knex,
     private readonly amalgamationService: AmalgamationService,
   ) {}

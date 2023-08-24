@@ -22,7 +22,7 @@ function pluckServiceNameFromPath(servicePath: string) {
   const logger = new Logger('Demonstrator');
   try {
     const app = await NestFactory.createApplicationContext(AppModule);
-    const modulePath = '../../src/knex/knex-transaction-demo.service.ts';
+    const modulePath = '../../src/knex/knex-multi-datasource-demo.service.ts';
     const name = pluckServiceNameFromPath(modulePath);
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const module = require(modulePath);
