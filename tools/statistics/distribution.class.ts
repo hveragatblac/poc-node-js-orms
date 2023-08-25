@@ -62,6 +62,7 @@ export class Distribution {
 
   toJson(percentiles: number[]) {
     const json: Record<string, unknown> = {
+      name: this.name,
       mean: this.mean,
       variance: this.variance,
       skewness: this.skewness,
