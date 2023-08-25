@@ -1,13 +1,50 @@
 import { Injectable } from '@nestjs/common';
 import { AmalgamationService } from './services/amalgamation.service';
 import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
-import {
-  random
-} from '../@common/utils/random.util';
+import { random } from '../@common/utils/random.util';
 import { Routine } from '../../tools/benchmark/types/routine.type';
+
+const Routines = {
+  SingleInsert: 'Single insert',
+  BulkInsert: 'Bulk insert',
+  FirstSelect: 'First select',
+  UniqueSelect: 'Unique select',
+  Select: 'select',
+  SingleUpdate: 'Single update',
+  BulkUpdate: 'Bulk update',
+  FirstDelete: 'First delete',
+  BulkDelete: 'Bulk delete',
+};
 
 @Injectable()
 export class PrismaBenchmarkService implements Benchmarkable {
+  private stateFirstSelect = {
+    criterion: {} as Record<string, unknown>,
+    amalgamations: [] as any[],
+  };
+
+  private stateSingleUpdate = {
+    criterion: {} as Record<string, unknown>,
+    dto: {} as Record<string, unknown>,
+    amalgamations: [] as any[],
+  };
+
+  private stateBulkUpdate = {
+    criterion: {} as Record<string, unknown>,
+    dto: {} as Record<string, unknown>,
+    amalgamations: [] as any[],
+  };
+
+  private stateFirstDelete = {
+    criterion: {} as Record<string, unknown>,
+    amalgamations: [] as any[],
+  };
+
+  private stateBulkDelete = {
+    criterion: {} as Record<string, unknown>,
+    amalgamations: [] as any[],
+  };
+
   constructor(private readonly amalgamationService: AmalgamationService) {}
 
   async run(): Promise<Routine[]> {
@@ -34,8 +71,28 @@ export class PrismaBenchmarkService implements Benchmarkable {
       },
       {
         name: 'First select',
-        task: async () => {},
+        task: async () => {
+          await this.amalgamationService.findFirst(
+            this.stateFirstSelect.criterion,
+          );
+        },
         generateTaskArguments: () => undefined,
+        beforeTask: async () => {
+          this.stateFirstSelect.amalgamations = random.amalgamations({
+            count: 2000,
+          });
+          await this.amalgamationService.saveMany(
+            this.stateFirstSelect.amalgamations as any,
+          );
+        },
+        beforeMeasurement: () => {
+          this.stateFirstSelect.criterion = {
+            name: random.item(this.stateFirstSelect.amalgamations).name,
+          };
+        },
+        afterTask: async () => {
+          await this.amalgamationService.deleteMany({});
+        },
       },
       {
         name: 'Unique select',
@@ -53,9 +110,26 @@ export class PrismaBenchmarkService implements Benchmarkable {
           await this.amalgamationService.updateFirst(dto, criterion);
         },
         generateTaskArguments: () => {
-          const dto = random.amalgamation();
-          const criterion = { name: dto.name };
-          return { dto, criterion };
+          return {
+            dto: this.stateSingleUpdate.dto,
+            criterion: this.stateSingleUpdate.criterion,
+          };
+        },
+        beforeTask: async () => {
+          this.stateSingleUpdate.amalgamations = random.amalgamations({
+            count: 2000,
+          });
+          await this.amalgamationService.saveMany(
+            this.stateSingleUpdate.amalgamations as any,
+          );
+          this.stateSingleUpdate.amalgamations =
+            await this.amalgamationService.find({});
+        },
+        beforeMeasurement: () => {
+          this.stateSingleUpdate.criterion = {
+            id: random.item(this.stateSingleUpdate.amalgamations).id,
+          };
+          this.stateSingleUpdate.dto = { fDecimal: random.decimal(30, 10) };
         },
         afterTask: async () => {
           await this.amalgamationService.deleteMany({});
@@ -67,14 +141,27 @@ export class PrismaBenchmarkService implements Benchmarkable {
           await this.amalgamationService.updateMany(dto, criterion);
         },
         generateTaskArguments: () => {
-          const dtos = Array.from({ length: 2000 });
-          const names = Array.from({ length: 2000 });
-          for (let i = 0; i < dtos.length; i++) {
-            dtos[i] = random.amalgamation();
-            names[i] = (dtos[i] as any).name;
-          }
-          const criterion = { name: { IN: names } };
-          return { dtos, criterion };
+          return {
+            dto: this.stateBulkUpdate.dto,
+            criterion: this.stateBulkUpdate.criterion,
+          };
+        },
+        beforeTask: async () => {
+          this.stateSingleUpdate.amalgamations = random.amalgamations({
+            count: 8000,
+          });
+          await this.amalgamationService.saveMany(
+            this.stateSingleUpdate.amalgamations as any,
+          );
+        },
+        beforeMeasurement: () => {
+          this.stateSingleUpdate.criterion = {
+            fBit: random.item(this.stateSingleUpdate.amalgamations).fBit,
+          };
+          this.stateSingleUpdate.dto = { fDecimal: random.decimal(30, 10) };
+        },
+        afterTask: async () => {
+          await this.amalgamationService.deleteMany({});
         },
       },
       {
@@ -82,14 +169,44 @@ export class PrismaBenchmarkService implements Benchmarkable {
         task: async (criterion: any) => {
           await this.amalgamationService.deleteFirst(criterion);
         },
-        generateTaskArguments: () => undefined,
+        generateTaskArguments: () => {
+          return this.stateFirstDelete.criterion;
+        },
+        beforeTask: async () => {
+          this.stateFirstDelete.amalgamations = random.amalgamations({
+            count: 8000,
+          });
+          await this.amalgamationService.saveMany(
+            this.stateFirstDelete.amalgamations as any,
+          );
+          this.stateFirstDelete.amalgamations =
+            await this.amalgamationService.find({});
+        },
+        beforeMeasurement: () => {
+          this.stateFirstDelete.criterion = {
+            id: random.item(this.stateFirstDelete.amalgamations).id,
+          };
+        },
       },
       {
         name: 'Bulk delete',
         task: async (criterion) => {
           await this.amalgamationService.deleteMany(criterion);
         },
-        generateTaskArguments: () => undefined,
+        generateTaskArguments: () => {
+          return this.stateBulkDelete.criterion;
+        },
+        beforeMeasurement: async () => {
+          this.stateBulkDelete.amalgamations = random.amalgamations({
+            count: 16,
+          });
+          await this.amalgamationService.saveMany(
+            this.stateBulkDelete.amalgamations as any,
+          );
+          this.stateBulkDelete.criterion = {
+            fBit: random.item(this.stateBulkDelete.amalgamations).fBit,
+          };
+        },
       },
     ];
   }

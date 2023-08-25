@@ -4,4 +4,6 @@ export interface Routine {
   generateTaskArguments?: () => unknown | Promise<unknown>;
   afterTask?: () => void | Promise<void>;
   beforeTask?: () => void | Promise<void>;
+  afterMeasurement?: () => void | Promise<void>;
+  beforeMeasurement?: () => void | Promise<void>;
 }

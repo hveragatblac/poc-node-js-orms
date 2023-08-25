@@ -3,7 +3,7 @@ import { AmalgamationService } from './services/amalgamation.service';
 import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
 import { random } from '../@common/utils/random.util';
 
-function adjustAmalgamation(amalgamation) {
+export function adjustAmalgamation(amalgamation) {
   amalgamation.fBigint = (amalgamation.fBigint as bigint).toString(10);
   amalgamation.fFloat = (amalgamation.fFloat as number).toExponential();
   amalgamation.fReal = (amalgamation.fReal as number).toExponential();

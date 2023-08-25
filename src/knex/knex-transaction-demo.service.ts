@@ -1,10 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Demo } from '../@common/types/demo.type';
 import { InjectKnex, Knex } from 'nestjs-knex';
-import { AmalgamationService } from './services/amalgamation.service';
-import { generateAmagamationKnex } from './knex-benchmark.service';
 import { inspect } from 'node:util';
 import { Connections } from './enums/connections.enum';
+import { random } from '../@common/utils/random.util';
+import { adjustAmalgamation } from './knex-benchmark.service';
 
 @Injectable()
 export class KnexTransactionDemoService implements Demo {
@@ -27,12 +27,12 @@ export class KnexTransactionDemoService implements Demo {
       async (tx) => {
         const amalgamation1 = await tx
           .withSchema('SalesLT')
-          .insert(generateAmagamationKnex())
+          .insert(random.amalgamation({ updater: adjustAmalgamation }))
           .into('Amalgamation')
           .returning('*');
         const amalgamation2 = await tx
           .withSchema('SalesLT')
-          .insert(generateAmagamationKnex())
+          .insert(random.amalgamation({ updater: adjustAmalgamation }))
           .into('Amalgamation')
           .returning('*');
         return [...amalgamation1, ...amalgamation2];
@@ -55,14 +55,14 @@ export class KnexTransactionDemoService implements Demo {
       tx = await this.knex.transaction({ isolationLevel: 'read committed' });
       await this.knex
         .withSchema('SalesLT')
-        .insert(generateAmagamationKnex())
+        .insert(random.amalgamation({ updater: adjustAmalgamation }))
         .into('Amalgamation')
         .transacting(tx)
         .returning('*')
         .then((rows) => payload.push(...rows));
       await this.knex
         .withSchema('SalesLT')
-        .insert(generateAmagamationKnex())
+        .insert(random.amalgamation({ updater: adjustAmalgamation }))
         .into('Amalgamation')
         .transacting(tx)
         .returning('*')
@@ -93,13 +93,13 @@ export class KnexTransactionDemoService implements Demo {
       tx = await txProvider();
       await tx
         .withSchema('SalesLT')
-        .insert(generateAmagamationKnex())
+        .insert(random.amalgamation({ updater: adjustAmalgamation }))
         .into('Amalgamation')
         .returning('*')
         .then((rows) => payload.push(...rows));
       await tx
         .withSchema('SalesLT')
-        .insert(generateAmagamationKnex())
+        .insert(random.amalgamation({ updater: adjustAmalgamation }))
         .into('Amalgamation')
         .returning('*')
         .then((rows) => payload.push(...rows));

@@ -6,7 +6,6 @@ import { Benchmarkable } from './types/benchmarkable.type';
 import { Measurement } from './types/measurement.type';
 import { writeFile } from 'node:fs/promises';
 import { Distribution } from '../statistics/distribution.class';
-import { KnexBenchmarkService } from '../../src/knex/knex-benchmark.service';
 
 type BiMap<T> = Record<string, Record<string, T>>;
 
@@ -15,7 +14,7 @@ const targets: Type<Benchmarkable>[] = [
   // KnexBenchmarkService,
 ];
 const measurementsByNameByTarget: BiMap<Measurement[]> = {};
-const repetitions = 10 ** 2;
+const repetitions = 10 ** 1;
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -42,9 +41,14 @@ const repetitions = 10 ** 2;
       // TODO: Add warm up
       // TODO: Add resource utilization, such as CPU, Memory, Disk and Network
       logger.log(`Running ${routine.name}`);
+
+      if (typeof routine.beforeTask === 'function') {
+        await routine.beforeTask();
+      }
+
       for (const measurement of measurements) {
-        if (typeof routine.beforeTask === 'function') {
-          await routine.beforeTask();
+        if (typeof routine.beforeMeasurement === 'function') {
+          await routine.beforeMeasurement();
         }
 
         const taskArgs = [];
@@ -57,10 +61,13 @@ const repetitions = 10 ** 2;
         await routine.task.call(routine, ...taskArgs);
         measurement.finishedAt = performance.now();
 
-        if (typeof routine.afterTask === 'function') {
-          console.log('asd')
-          await routine.afterTask();
+        if (typeof routine.afterMeasurement === 'function') {
+          await routine.afterMeasurement();
         }
+      }
+
+      if (typeof routine.afterTask === 'function') {
+        await routine.afterTask();
       }
 
       measurementsByName[routine.name] = measurements;

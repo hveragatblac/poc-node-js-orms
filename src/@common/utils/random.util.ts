@@ -1,6 +1,9 @@
 import { faker } from '@faker-js/faker';
 
 export const random = {
+  item: (items: any[]) => {
+    return items[Math.floor(Math.random() * items.length)];
+  },
   decimal: (precision: number, scale: number): string => {
     const integerPart = faker.string.numeric({
       length: {
