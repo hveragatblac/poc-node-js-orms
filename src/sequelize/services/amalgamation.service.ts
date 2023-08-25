@@ -1,38 +1,49 @@
 import { Injectable } from '@nestjs/common';
-import { Sequelize } from 'sequelize-typescript';
 import { Amalgamation } from '../models/amalgamation.model';
 import { InjectModel } from '@nestjs/sequelize';
-import { random } from '../../@common/utils/random.util';
-import { format } from 'date-fns';
 
 @Injectable()
 export class AmalgamationService {
   constructor(
-    private sequelize: Sequelize,
     @InjectModel(Amalgamation)
     private amalgamationModel: typeof Amalgamation,
   ) {}
 
-  async create() {
-    return this.amalgamationModel.create(
-      random.amalgamation({
-        updater: (dto) => {
-          dto.fFloat = (dto.fFloat as number).toString(10);
-          dto.fReal = (dto.fReal as number).toString(10);
-          dto.fDate = format(dto.fDate, 'yyyy-MM-dd');
-          dto.fDatetime2 = format(dto.fDatetime2, 'yyyy-MM-dd hh:mm:ss');
-          dto.fDatetime = format(dto.fDatetime, 'yyyy-MM-dd hh:mm:ss');
-          dto.fDatetimeoffset = format(
-            dto.fDatetimeoffset,
-            'yyyy-MM-dd hh:mm:ss',
-          );
-          dto.fSmalldatetime = format(
-            dto.fSmalldatetime,
-            'yyyy-MM-dd hh:mm:ss',
-          );
-          dto.fTime = format(dto.fTime, 'hh:mm:ss');
-        },
-      }),
-    );
+  async saveOne(dto: any) {
+    return this.amalgamationModel.create(dto);
+  }
+
+  async saveMany(dtos: any[]) {
+    return this.amalgamationModel.bulkCreate(dtos);
+  }
+
+  async findFirst(criterion: any) {
+    return this.amalgamationModel.findOne({ where: criterion });
+  }
+
+  // TODO: Should enforce usage of unique criterion like Prisma
+  async findUnique(criterion: any) {
+    return this.amalgamationModel.findOne({ where: criterion });
+  }
+
+  async find(criterion: any) {
+    return this.amalgamationModel.findAll({ where: criterion });
+  }
+
+  // TODO: Should enforce usage of unique criterion like Prisma
+  async updateFirst(dto: any, criterion: any) {
+    return this.amalgamationModel.update(dto, { where: criterion });
+  }
+
+  async updateMany(dto: any, criterion: any) {
+    return this.amalgamationModel.update(dto, { where: criterion });
+  }
+
+  async deleteFirst(criterion: any) {
+    return this.amalgamationModel.destroy({ where: criterion, limit: 1 });
+  }
+
+  async deleteMany(criterion: any) {
+    return this.amalgamationModel.destroy({ where: criterion });
   }
 }
