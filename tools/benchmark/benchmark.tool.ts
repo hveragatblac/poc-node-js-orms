@@ -11,11 +11,11 @@ import { KnexBenchmarkService } from '../../src/knex/knex-benchmark.service';
 type BiMap<T> = Record<string, Record<string, T>>;
 
 const targets: Type<Benchmarkable>[] = [
-  // PrismaBenchmarkService,
-  KnexBenchmarkService,
+  PrismaBenchmarkService,
+  // KnexBenchmarkService,
 ];
 const measurementsByNameByTarget: BiMap<Measurement[]> = {};
-const repetitions = 10 ** 4;
+const repetitions = 10 ** 2;
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -43,10 +43,24 @@ const repetitions = 10 ** 4;
       // TODO: Add resource utilization, such as CPU, Memory, Disk and Network
       logger.log(`Running ${routine.name}`);
       for (const measurement of measurements) {
-        const arg = await routine.generateArguments();
+        if (typeof routine.beforeTask === 'function') {
+          await routine.beforeTask();
+        }
+
+        const taskArgs = [];
+        if (typeof routine.generateTaskArguments === 'function') {
+          const args = await routine.generateTaskArguments();
+          taskArgs.push(args);
+        }
+
         measurement.startedAt = performance.now();
-        await routine.task(arg);
+        await routine.task.call(routine, ...taskArgs);
         measurement.finishedAt = performance.now();
+
+        if (typeof routine.afterTask === 'function') {
+          console.log('asd')
+          await routine.afterTask();
+        }
       }
 
       measurementsByName[routine.name] = measurements;

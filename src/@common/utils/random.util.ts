@@ -1,5 +1,4 @@
 import { faker } from '@faker-js/faker';
-import { Prisma } from '@prisma/client';
 
 export const random = {
   decimal: (precision: number, scale: number): string => {
@@ -101,4 +100,21 @@ export const generateAmalgamation = (): any => {
     fUniqueidentifier: faker.string.uuid(),
     fXml: random.xml(),
   };
+};
+
+const names = new Set();
+export const generateAmalgamations = (args: { count: number }): any[] => {
+  return faker.helpers.multiple(
+    () => {
+      const o = generateAmalgamation();
+      while (names.has(o.name))
+        o.name = faker.string.alphanumeric({
+          casing: 'mixed',
+          length: { min: 0, max: 255 },
+        });
+      names.add(o.name);
+      return o;
+    },
+    { count: args.count },
+  );
 };

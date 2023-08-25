@@ -1,53 +1,65 @@
 import { Injectable } from '@nestjs/common';
 import { AmalgamationService } from './services/amalgamation.service';
 import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
-import { generateAmalgamation } from '../@common/utils/random.util';
+import {
+  generateAmalgamation,
+  generateAmalgamations,
+} from '../@common/utils/random.util';
+import { Routine } from '../../tools/benchmark/types/routine.type';
 
 @Injectable()
 export class PrismaBenchmarkService implements Benchmarkable {
   constructor(private readonly amalgamationService: AmalgamationService) {}
 
-  async run() {
+  async run(): Promise<Routine[]> {
     return [
       {
         name: 'Single insert',
-        task: async (dto) => {
+        task: async (dto: any) => {
           await this.amalgamationService.saveOne(dto);
         },
-        generateArguments: generateAmalgamation,
+        generateTaskArguments: generateAmalgamation,
+        afterTask: async () => {
+          await this.amalgamationService.deleteMany({});
+        },
       },
       {
         name: 'Bulk insert',
-        task: async (dtos) => {
+        task: async (dtos: any) => {
           await this.amalgamationService.saveMany(dtos);
         },
-        generateArguments: () =>
-          Array.from({ length: 2000 }).map(generateAmalgamation),
+        generateTaskArguments: () => generateAmalgamations({ count: 2000 }),
+        afterTask: async () => {
+          await this.amalgamationService.deleteMany({});
+        },
       },
       {
         name: 'First select',
         task: async () => {},
-        generateArguments: () => undefined,
+        generateTaskArguments: () => undefined,
       },
       {
         name: 'Unique select',
         task: async () => {},
-        generateArguments: () => undefined,
+        generateTaskArguments: () => undefined,
       },
       {
         name: 'select',
         task: async () => {},
-        generateArguments: () => undefined,
+        generateTaskArguments: () => undefined,
       },
       {
         name: 'Single update',
         task: async ({ dto, criterion }) => {
           await this.amalgamationService.updateFirst(dto, criterion);
         },
-        generateArguments: () => {
+        generateTaskArguments: () => {
           const dto = generateAmalgamation();
           const criterion = { name: dto.name };
           return { dto, criterion };
+        },
+        afterTask: async () => {
+          await this.amalgamationService.deleteMany({});
         },
       },
       {
@@ -55,7 +67,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
         task: async ({ dto, criterion }) => {
           await this.amalgamationService.updateMany(dto, criterion);
         },
-        generateArguments: () => {
+        generateTaskArguments: () => {
           const dtos = Array.from({ length: 2000 });
           const names = Array.from({ length: 2000 });
           for (let i = 0; i < dtos.length; i++) {
@@ -68,17 +80,17 @@ export class PrismaBenchmarkService implements Benchmarkable {
       },
       {
         name: 'First delete',
-        task: async (criterion) => {
+        task: async (criterion: any) => {
           await this.amalgamationService.deleteFirst(criterion);
         },
-        generateArguments: () => undefined,
+        generateTaskArguments: () => undefined,
       },
       {
         name: 'Bulk delete',
         task: async (criterion) => {
           await this.amalgamationService.deleteMany(criterion);
         },
-        generateArguments: () => undefined,
+        generateTaskArguments: () => undefined,
       },
     ];
   }
