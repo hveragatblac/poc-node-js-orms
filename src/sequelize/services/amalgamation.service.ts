@@ -3,7 +3,6 @@ import { Sequelize } from 'sequelize-typescript';
 import { Amalgamation } from '../models/amalgamation.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { random } from '../../@common/utils/random.util';
-import { adjustAmalgamation } from '../../knex/knex-benchmark.service';
 import { format } from 'date-fns';
 
 @Injectable()
@@ -18,7 +17,6 @@ export class AmalgamationService {
     return this.amalgamationModel.create(
       random.amalgamation({
         updater: (dto) => {
-          dto.fDecimal = '99999999999999999999.9999999999';
           dto.fFloat = (dto.fFloat as number).toString(10);
           dto.fReal = (dto.fReal as number).toString(10);
           dto.fDate = format(dto.fDate, 'yyyy-MM-dd');
