@@ -185,7 +185,7 @@ model SalesOrderHeader {
 
 model Amalgamation {
   id Int @id @default(autoincrement())
-  name String @unique(map: "AK_Amalgamation_name") @db.VarChar(255)
+  name String @db.VarChar(255)
 
   // Exact numerics
   fBigint BigInt @db.BigInt()
