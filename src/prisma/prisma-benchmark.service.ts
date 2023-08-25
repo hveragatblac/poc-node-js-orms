@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AmalgamationService } from './services/amalgamation.service';
 import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
 import {
-  generateAmalgamation,
-  generateAmalgamations,
+  random
 } from '../@common/utils/random.util';
 import { Routine } from '../../tools/benchmark/types/routine.type';
 
@@ -18,7 +17,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
         task: async (dto: any) => {
           await this.amalgamationService.saveOne(dto);
         },
-        generateTaskArguments: generateAmalgamation,
+        generateTaskArguments: random.amalgamation,
         afterTask: async () => {
           await this.amalgamationService.deleteMany({});
         },
@@ -28,7 +27,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
         task: async (dtos: any) => {
           await this.amalgamationService.saveMany(dtos);
         },
-        generateTaskArguments: () => generateAmalgamations({ count: 2000 }),
+        generateTaskArguments: () => random.amalgamations({ count: 2000 }),
         afterTask: async () => {
           await this.amalgamationService.deleteMany({});
         },
@@ -54,7 +53,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
           await this.amalgamationService.updateFirst(dto, criterion);
         },
         generateTaskArguments: () => {
-          const dto = generateAmalgamation();
+          const dto = random.amalgamation();
           const criterion = { name: dto.name };
           return { dto, criterion };
         },
@@ -71,7 +70,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
           const dtos = Array.from({ length: 2000 });
           const names = Array.from({ length: 2000 });
           for (let i = 0; i < dtos.length; i++) {
-            dtos[i] = generateAmalgamation();
+            dtos[i] = random.amalgamation();
             names[i] = (dtos[i] as any).name;
           }
           const criterion = { name: { IN: names } };

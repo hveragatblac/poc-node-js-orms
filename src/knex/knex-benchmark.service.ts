@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { AmalgamationService } from './services/amalgamation.service';
 import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
-import { generateAmalgamation } from '../@common/utils/random.util';
+import { random } from '../@common/utils/random.util';
 
-export function generateAmagamationKnex() {
-  const amalgamation = generateAmalgamation();
+function adjustAmalgamation(amalgamation) {
   amalgamation.fBigint = (amalgamation.fBigint as bigint).toString(10);
   amalgamation.fFloat = (amalgamation.fFloat as number).toExponential();
   amalgamation.fReal = (amalgamation.fReal as number).toExponential();
-  return amalgamation;
 }
 
 @Injectable()
@@ -22,7 +20,8 @@ export class KnexBenchmarkService implements Benchmarkable {
         task: async (dto) => {
           await this.amalgamationService.saveOne(dto);
         },
-        generateArguments: generateAmagamationKnex,
+        generateArguments: () =>
+          random.amalgamation({ updater: adjustAmalgamation }),
       },
       {
         name: 'Bulk insert',
@@ -30,7 +29,7 @@ export class KnexBenchmarkService implements Benchmarkable {
           await this.amalgamationService.saveMany(dtos);
         },
         generateArguments: () =>
-          Array.from({ length: 2000 }).map(generateAmagamationKnex),
+          random.amalgamations({ count: 2000, updater: adjustAmalgamation }),
       },
       {
         name: 'First select',
@@ -53,7 +52,7 @@ export class KnexBenchmarkService implements Benchmarkable {
           await this.amalgamationService.updateFirst(dto, criterion);
         },
         generateArguments: () => {
-          const dto = generateAmagamationKnex();
+          const dto = random.amalgamation({ updater: adjustAmalgamation });
           const criterion = { name: dto.name };
           return { dto, criterion };
         },
@@ -64,12 +63,11 @@ export class KnexBenchmarkService implements Benchmarkable {
           await this.amalgamationService.updateMany(dto, criterion);
         },
         generateArguments: () => {
-          const dtos = Array.from({ length: 2000 });
-          const names = Array.from({ length: 2000 });
-          for (let i = 0; i < dtos.length; i++) {
-            dtos[i] = generateAmagamationKnex();
-            names[i] = (dtos[i] as any).name;
-          }
+          const dtos = random.amalgamations({
+            count: 2000,
+            updater: adjustAmalgamation,
+          });
+          const names = dtos.map((u) => u.name);
           const criterion = { name: { IN: names } };
           return { dtos, criterion };
         },
