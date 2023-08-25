@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import * as process from 'process';
+import * as process from 'node:process';
 import { Knex } from 'knex';
 
 export default registerAs('db-bcs-riesgo-knex', (): Knex.Config => {

@@ -6,6 +6,7 @@ import { Benchmarkable } from './types/benchmarkable.type';
 import { Measurement } from './types/measurement.type';
 import { writeFile } from 'node:fs/promises';
 import { Distribution } from '../statistics/distribution.class';
+import * as process from 'node:process';
 
 type BiMap<T> = Record<string, Record<string, T>>;
 

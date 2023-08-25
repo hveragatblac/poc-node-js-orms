@@ -1,0 +1,7 @@
+const path = require('path');
+
+module.exports = {
+   'seeders-path': path.resolve('src/sequelize/database/adventureworks', 'seeders'),
+   'migrations-path': path.resolve('src/sequelize/database/adventureworks', 'migrations'),
+   'config': path.resolve('src/sequelize/database/adventureworks', 'config.js'),
+}
