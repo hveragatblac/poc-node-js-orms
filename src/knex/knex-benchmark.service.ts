@@ -3,7 +3,7 @@ import { AmalgamationService } from './services/amalgamation.service';
 import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
 import { random } from '../@common/utils/random.util';
 
-export function adjustAmalgamation(amalgamation) {
+export function knexAdjustAmalgamation(amalgamation) {
   amalgamation.fBigint = (amalgamation.fBigint as bigint).toString(10);
   amalgamation.fFloat = (amalgamation.fFloat as number).toExponential();
   amalgamation.fReal = (amalgamation.fReal as number).toExponential();
@@ -21,7 +21,7 @@ export class KnexBenchmarkService implements Benchmarkable {
           await this.amalgamationService.saveOne(dto);
         },
         generateArguments: () =>
-          random.amalgamation({ updater: adjustAmalgamation }),
+          random.amalgamation({ updater: knexAdjustAmalgamation }),
       },
       {
         name: 'Bulk insert',
@@ -29,7 +29,7 @@ export class KnexBenchmarkService implements Benchmarkable {
           await this.amalgamationService.saveMany(dtos);
         },
         generateArguments: () =>
-          random.amalgamations({ count: 2000, updater: adjustAmalgamation }),
+          random.amalgamations({ count: 2000, updater: knexAdjustAmalgamation }),
       },
       {
         name: 'First select',
@@ -52,7 +52,7 @@ export class KnexBenchmarkService implements Benchmarkable {
           await this.amalgamationService.updateFirst(dto, criterion);
         },
         generateArguments: () => {
-          const dto = random.amalgamation({ updater: adjustAmalgamation });
+          const dto = random.amalgamation({ updater: knexAdjustAmalgamation });
           const criterion = { name: dto.name };
           return { dto, criterion };
         },
@@ -65,7 +65,7 @@ export class KnexBenchmarkService implements Benchmarkable {
         generateArguments: () => {
           const dtos = random.amalgamations({
             count: 2000,
-            updater: adjustAmalgamation,
+            updater: knexAdjustAmalgamation,
           });
           const names = dtos.map((u) => u.name);
           const criterion = { name: { IN: names } };

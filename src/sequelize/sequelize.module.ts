@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AmalgamationService } from './services/amalgamation.service';
 import { SequelizeTransactionDemoService } from './sequelize-transaction-demo.service';
 import { Amalgamation } from './models/amalgamation.model';
+import { SequelizeBenchmarkService } from './sequelize-benchmark.service';
 
 @Module({
   imports: [
@@ -16,6 +17,6 @@ import { Amalgamation } from './models/amalgamation.model';
     }),
     NestJsSequelizeModule.forFeature([Amalgamation]),
   ],
-  providers: [AmalgamationService, SequelizeTransactionDemoService],
+  providers: [AmalgamationService, SequelizeTransactionDemoService, SequelizeBenchmarkService],
 })
 export class SequelizeModule {}
