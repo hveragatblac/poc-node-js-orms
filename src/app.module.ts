@@ -8,6 +8,7 @@ import { SequelizeModule } from './sequelize/sequelize.module';
 import databaseAdventureWorksKnexConfiguration from './@configurations/database-adventure-works-knex.configuration';
 import databaseAdventureWorksSequelizeConfiguration from './@configurations/database-adventure-works-sequelize.configuration';
 import databaseBcsRiesgoKnexConfiguration from './@configurations/database-bcs-riesgo-knex.configuration';
+import databaseBcsRiesgoSequelizeConfiguration from './@configurations/database-bcs-riesgo-sequelize.configuration';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import databaseBcsRiesgoKnexConfiguration from './@configurations/database-bcs-r
       isGlobal: true,
       load: [
         databaseBcsRiesgoKnexConfiguration,
+        databaseBcsRiesgoSequelizeConfiguration,
         databaseAdventureWorksKnexConfiguration,
         databaseAdventureWorksSequelizeConfiguration,
       ],

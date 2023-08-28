@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { format } from 'date-fns';
 
 export function sequelizeAdjustAmalgamation(amalgamation) {
+  amalgamation.fFloat = (amalgamation.fFloat as number).toExponential();
+  amalgamation.fReal = (amalgamation.fReal as number).toExponential();
   amalgamation.fDate = format(amalgamation.fDate, 'yyyy-MM-dd');
   amalgamation.fDatetime = format(
     amalgamation.fDatetime,

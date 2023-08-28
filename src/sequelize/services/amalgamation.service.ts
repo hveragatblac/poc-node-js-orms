@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/sequelize';
 @Injectable()
 export class AmalgamationService {
   constructor(
-    @InjectModel(Amalgamation)
+    @InjectModel(Amalgamation, 'adventureworks')
     private amalgamationModel: typeof Amalgamation,
   ) {}
 

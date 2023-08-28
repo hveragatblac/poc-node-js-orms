@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Demo } from '../@common/types/demo.type';
 import { Sequelize } from 'sequelize-typescript';
 import { Amalgamation } from './models/amalgamation.model';
-import { InjectModel } from '@nestjs/sequelize';
+import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Transaction } from 'sequelize';
 import { random } from '../@common/utils/random.util';
 import { sequelizeAdjustAmalgamation } from './sequelize-benchmark.service';
@@ -13,8 +13,9 @@ export class SequelizeTransactionDemoService implements Demo {
   private readonly logger = new Logger(SequelizeTransactionDemoService.name);
 
   constructor(
+    @InjectConnection('adventureworks')
     private readonly sequelize: Sequelize,
-    @InjectModel(Amalgamation)
+    @InjectModel(Amalgamation, 'adventureworks')
     private readonly amalgamationModel: typeof Amalgamation,
   ) {}
 

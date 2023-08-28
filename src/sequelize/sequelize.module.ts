@@ -5,18 +5,35 @@ import { AmalgamationService } from './services/amalgamation.service';
 import { SequelizeTransactionDemoService } from './sequelize-transaction-demo.service';
 import { Amalgamation } from './models/amalgamation.model';
 import { SequelizeBenchmarkService } from './sequelize-benchmark.service';
+import { SequelizeMultiDatasourceDemoService } from './sequelize-multi-datasource-demo.service';
+import { User } from './models/user.model';
 
 @Module({
   imports: [
     ConfigModule,
     NestJsSequelizeModule.forRootAsync({
+      name: 'adventureworks',
       useFactory: (configService: ConfigService) => {
         return configService.get('db-sequelize');
       },
       inject: [ConfigService],
     }),
-    NestJsSequelizeModule.forFeature([Amalgamation]),
+    NestJsSequelizeModule.forFeature([Amalgamation], 'adventureworks'),
+
+    NestJsSequelizeModule.forRootAsync({
+      name: 'bcsriesgo',
+      useFactory: (configService: ConfigService) => {
+        return configService.get('db-bcs-riesgo-sequelize');
+      },
+      inject: [ConfigService],
+    }),
+    NestJsSequelizeModule.forFeature([User], 'bcsriesgo'),
   ],
-  providers: [AmalgamationService, SequelizeTransactionDemoService, SequelizeBenchmarkService],
+  providers: [
+    AmalgamationService,
+    SequelizeTransactionDemoService,
+    SequelizeBenchmarkService,
+    SequelizeMultiDatasourceDemoService,
+  ],
 })
 export class SequelizeModule {}
