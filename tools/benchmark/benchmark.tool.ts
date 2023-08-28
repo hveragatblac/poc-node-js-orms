@@ -94,13 +94,12 @@ const repetitions = 10 ** 1;
   }
 
   await writeFile(
-    `benchmark-results/measurements-${performance.now()}.json`,
+    `benchmark-results/measurements-${Date.now()}.json`,
     JSON.stringify(results),
     {
       encoding: 'utf-8',
     },
   );
 
-  await app.close();
   process.exit(0);
 })();

@@ -4,22 +4,43 @@ export const random = {
   item: (items: any[]) => {
     return items[Math.floor(Math.random() * items.length)];
   },
-  decimal: (precision: number, scale: number): string => {
-    const integerPart = faker.string.numeric({
-      length: {
-        min: 1,
-        max: precision - scale,
-      },
-      allowLeadingZeros: false,
+  decimal: (
+    precision: number,
+    scale: number,
+    options?: { min: bigint; max: bigint },
+  ): string => {
+    const maxIntegral = 10n ** BigInt(precision - scale) - 1n;
+    const integralPart = faker.number.bigInt({
+      min: options?.min ?? -1n * maxIntegral,
+      max: options?.max ?? maxIntegral,
     });
-    const decimalPart = faker.string.numeric({
-      length: {
-        min: 1,
-        max: scale,
-      },
-      allowLeadingZeros: false,
+
+    const integralMatchesBounds =
+      integralPart === options?.max || integralPart === options?.min;
+    const maxFractional = integralMatchesBounds
+      ? 0n
+      : 10n ** BigInt(scale) - 1n;
+    const fractionalPart = faker.number.bigInt({
+      min: 0n,
+      max: maxFractional,
     });
-    return `${integerPart}.${decimalPart}`;
+
+    return `${integralPart.toString(10)}.${fractionalPart.toString(10)}`;
+    // const integerPart = faker.string.numeric({
+    //   length: {
+    //     min: 1,
+    //     max: precision - scale,
+    //   },
+    //   allowLeadingZeros: false,
+    // });
+    // const decimalPart = faker.string.numeric({
+    //   length: {
+    //     min: 1,
+    //     max: scale,
+    //   },
+    //   allowLeadingZeros: false,
+    // });
+    // return `${integerPart}.${decimalPart}`;
   },
   buffer: (length: number) => {
     return Buffer.from(

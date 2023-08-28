@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { DeepPartial, FindOptionsWhere, Repository } from 'typeorm';
 import { Amalgamation } from '../models/amalgamation.model';
 import { InjectRepository } from '@nestjs/typeorm';
-import { random } from '../../@common/utils/random.util';
 
 @Injectable()
 export class AmalgamationService {

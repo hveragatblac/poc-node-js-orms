@@ -12,6 +12,7 @@ const datasourceOptions: any = {
   password: configService.get('DATABASE_TYPEORM_PASSWORD'),
   database: configService.get('DATABASE_TYPEORM_DATABASE'),
   entities: ['src/typeorm/models/**/*.model.ts'],
+  migrations: ['src/typeorm/migrations/*.ts'],
   options: {
     encrypt: true,
     trustServerCertificate: true,
