@@ -5,10 +5,12 @@ import { PrismaModule } from './prisma/prisma.module';
 import { KnexModule } from './knex/knex.module';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from './sequelize/sequelize.module';
+import { TypeormModule } from './typeorm/typeorm.module';
 import databaseAdventureWorksKnexConfiguration from './@configurations/database-adventure-works-knex.configuration';
 import databaseAdventureWorksSequelizeConfiguration from './@configurations/database-adventure-works-sequelize.configuration';
 import databaseBcsRiesgoKnexConfiguration from './@configurations/database-bcs-riesgo-knex.configuration';
 import databaseBcsRiesgoSequelizeConfiguration from './@configurations/database-bcs-riesgo-sequelize.configuration';
+import databaseAdventureWorksTypeormConfiguration from './@configurations/database-adventure-works-typeorm.configuration';
 
 @Module({
   imports: [
@@ -19,11 +21,13 @@ import databaseBcsRiesgoSequelizeConfiguration from './@configurations/database-
         databaseBcsRiesgoSequelizeConfiguration,
         databaseAdventureWorksKnexConfiguration,
         databaseAdventureWorksSequelizeConfiguration,
+        databaseAdventureWorksTypeormConfiguration,
       ],
     }),
     PrismaModule,
     KnexModule,
     SequelizeModule,
+    TypeormModule,
   ],
   controllers: [AppController],
   providers: [AppService],
