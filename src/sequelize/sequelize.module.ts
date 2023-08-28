@@ -9,6 +9,7 @@ import { SequelizeMultiDatasourceDemoService } from './sequelize-multi-datasourc
 import { User } from './models/user.model';
 import { BaseUser } from './models/base-user.model';
 import { TransactionalOrder } from './models/transactional-order.model';
+import { SequelizeCachingDemoService } from './sequelize-caching-demo.service';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { TransactionalOrder } from './models/transactional-order.model';
     SequelizeTransactionDemoService,
     SequelizeBenchmarkService,
     SequelizeMultiDatasourceDemoService,
+    SequelizeCachingDemoService,
   ],
 })
 export class SequelizeModule {}
