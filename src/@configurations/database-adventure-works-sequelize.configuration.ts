@@ -2,6 +2,8 @@ import { registerAs } from '@nestjs/config';
 import * as process from 'node:process';
 import { SequelizeModuleOptions } from '@nestjs/sequelize';
 import { Amalgamation } from '../sequelize/models/amalgamation.model';
+import { BaseUser } from '../sequelize/models/base-user.model';
+import { TransactionalOrder } from '../sequelize/models/transactional-order.model';
 
 export default registerAs('db-sequelize', (): SequelizeModuleOptions => {
   return {
@@ -12,7 +14,7 @@ export default registerAs('db-sequelize', (): SequelizeModuleOptions => {
     password: process.env.DATABASE_SEQUELIZE_PASSWORD,
     database: process.env.DATABASE_SEQUELIZE_DATABASE,
     // autoLoadModels: true,
-    models: [Amalgamation],
+    models: [Amalgamation, BaseUser, TransactionalOrder],
     dialectOptions: {
       options: {
         encrypt: true,

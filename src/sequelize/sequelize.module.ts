@@ -7,6 +7,8 @@ import { Amalgamation } from './models/amalgamation.model';
 import { SequelizeBenchmarkService } from './sequelize-benchmark.service';
 import { SequelizeMultiDatasourceDemoService } from './sequelize-multi-datasource-demo.service';
 import { User } from './models/user.model';
+import { BaseUser } from './models/base-user.model';
+import { TransactionalOrder } from './models/transactional-order.model';
 
 @Module({
   imports: [
@@ -18,7 +20,10 @@ import { User } from './models/user.model';
       },
       inject: [ConfigService],
     }),
-    NestJsSequelizeModule.forFeature([Amalgamation], 'adventureworks'),
+    NestJsSequelizeModule.forFeature(
+      [Amalgamation, BaseUser, TransactionalOrder],
+      'adventureworks',
+    ),
 
     NestJsSequelizeModule.forRootAsync({
       name: 'bcsriesgo',

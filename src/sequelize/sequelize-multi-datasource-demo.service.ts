@@ -4,6 +4,8 @@ import { InjectConnection, InjectModel } from '@nestjs/sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { User } from './models/user.model';
 import { Amalgamation } from './models/amalgamation.model';
+import { BaseUser } from './models/base-user.model';
+import { TransactionalOrder } from './models/transactional-order.model';
 
 @Injectable()
 export class SequelizeMultiDatasourceDemoService implements Demo {
@@ -16,6 +18,10 @@ export class SequelizeMultiDatasourceDemoService implements Demo {
     private readonly adventureworks: Sequelize,
     @InjectModel(Amalgamation, 'adventureworks')
     private readonly amalgamation: typeof Amalgamation,
+    @InjectModel(BaseUser, 'adventureworks')
+    private readonly baseUser: typeof BaseUser,
+    @InjectModel(TransactionalOrder, 'adventureworks')
+    private readonly transactionalOrder: typeof TransactionalOrder,
     @InjectConnection('bcsriesgo')
     private readonly bcsRiesgo: Sequelize,
     @InjectModel(User, 'bcsriesgo')
@@ -37,5 +43,12 @@ export class SequelizeMultiDatasourceDemoService implements Demo {
     );
   }
 
-  private async doQueryAcrossMultipleDatabaseSchemas() {}
+  private async doQueryAcrossMultipleDatabaseSchemas() {
+    // Order belongs to transactional schema
+    // User belongs to base schema
+    const users = await this.baseUser.findAll({
+      include: TransactionalOrder,
+    });
+    this.logger.log(`Got base.User`, users);
+  }
 }
