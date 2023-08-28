@@ -4,18 +4,6 @@ import { Benchmarkable } from '../../tools/benchmark/types/benchmarkable.type';
 import { random } from '../@common/utils/random.util';
 import { Routine } from '../../tools/benchmark/types/routine.type';
 
-const Routines = {
-  SingleInsert: 'Single insert',
-  BulkInsert: 'Bulk insert',
-  FirstSelect: 'First select',
-  UniqueSelect: 'Unique select',
-  Select: 'select',
-  SingleUpdate: 'Single update',
-  BulkUpdate: 'Bulk update',
-  FirstDelete: 'First delete',
-  BulkDelete: 'Bulk delete',
-};
-
 @Injectable()
 export class PrismaBenchmarkService implements Benchmarkable {
   private stateFirstSelect = {

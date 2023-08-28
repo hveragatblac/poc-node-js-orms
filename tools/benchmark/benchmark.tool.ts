@@ -1,18 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../../src/app.module';
 import { Logger, Type } from '@nestjs/common';
-import { PrismaBenchmarkService } from '../../src/prisma/prisma-benchmark.service';
 import { Benchmarkable } from './types/benchmarkable.type';
 import { Measurement } from './types/measurement.type';
 import { writeFile } from 'node:fs/promises';
 import { Distribution } from '../statistics/distribution.class';
 import * as process from 'node:process';
+import { TypeormBenchmarkService } from '../../src/typeorm/typeorm-benchmark.service';
 
 type BiMap<T> = Record<string, Record<string, T>>;
 
 const targets: Type<Benchmarkable>[] = [
-  PrismaBenchmarkService,
+  // PrismaBenchmarkService,
   // KnexBenchmarkService,
+  // PrismaBenchmarkService,
+  TypeormBenchmarkService,
 ];
 const measurementsByNameByTarget: BiMap<Measurement[]> = {};
 const repetitions = 10 ** 1;
