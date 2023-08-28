@@ -7,13 +7,16 @@ import { writeFile } from 'node:fs/promises';
 import { Distribution } from '../statistics/distribution.class';
 import * as process from 'node:process';
 import { TypeormBenchmarkService } from '../../src/typeorm/typeorm-benchmark.service';
+import { KnexBenchmarkService } from '../../src/knex/knex-benchmark.service';
+import { SequelizeBenchmarkService } from '../../src/sequelize/sequelize-benchmark.service';
+import { PrismaBenchmarkService } from '../../src/prisma/prisma-benchmark.service';
 
 type BiMap<T> = Record<string, Record<string, T>>;
 
 const targets: Type<Benchmarkable>[] = [
   // PrismaBenchmarkService,
   // KnexBenchmarkService,
-  // PrismaBenchmarkService,
+  // SequelizeBenchmarkService,
   TypeormBenchmarkService,
 ];
 const measurementsByNameByTarget: BiMap<Measurement[]> = {};

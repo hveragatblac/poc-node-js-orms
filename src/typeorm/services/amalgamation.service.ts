@@ -1,5 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DeepPartial, FindOptionsWhere, Repository } from 'typeorm';
+import {
+  DeepPartial,
+  FindOneOptions,
+  FindOptionsWhere,
+  Repository,
+} from 'typeorm';
 import { Amalgamation } from '../models/amalgamation.model';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -14,21 +19,48 @@ export class AmalgamationService {
     return this.amalgamationRepository.save(dto);
   }
 
-  async saveMany() {}
+  async saveMany(dtos: DeepPartial<Amalgamation>[]) {
+    // TODO: How can I cleanly bypass the parameters limit? raw queries allow it but using the Knex API?
+    const maxSqlServerParams = 2000;
+    const dtoFieldCount = Object.keys(dtos[0]).length;
+    const batchSize = Math.floor(maxSqlServerParams / dtoFieldCount);
+    return this.amalgamationRepository.save(dtos, { chunk: batchSize });
+  }
 
-  async findFirst() {}
+  async findFirst(criterion: FindOptionsWhere<Amalgamation>) {
+    return this.amalgamationRepository.findOneBy(criterion);
+  }
 
-  async findUnique() {}
+  async findUnique(criterion: FindOptionsWhere<Amalgamation>) {
+    return this.amalgamationRepository.findOneBy(criterion);
+  }
 
-  async find() {}
+  async find(criterion: FindOptionsWhere<Amalgamation>) {
+    return this.amalgamationRepository.findBy(criterion);
+  }
 
-  async updateFirst() {}
+  // TODO: Should try to use repository.update
+  async updateFirst(dto: DeepPartial<Amalgamation>) {
+    return this.amalgamationRepository.save(dto);
+  }
 
-  async updateMany() {}
+  // TODO: Should try to use repository.update
+  async updateMany(dtos: DeepPartial<Amalgamation>[]) {
+    // TODO: How can I cleanly bypass the parameters limit? raw queries allow it but using the Knex API?
+    const maxSqlServerParams = 2000;
+    const dtoFieldCount = Object.keys(dtos[0]).length;
+    const batchSize = Math.floor(maxSqlServerParams / dtoFieldCount);
+    return this.amalgamationRepository.save(dtos, { chunk: batchSize });
+  }
 
-  async deleteFirst() {}
+  async deleteFirst(dto: DeepPartial<Amalgamation>) {
+    return this.amalgamationRepository.remove(dto as Amalgamation);
+  }
 
-  async deleteMany(criterion: FindOptionsWhere<Amalgamation>) {
-    return this.amalgamationRepository.delete(criterion);
+  async deleteMany(dtos?: DeepPartial<Amalgamation>[]) {
+    if (!dtos || dtos.length === 0) {
+      return this.amalgamationRepository.createQueryBuilder().delete();
+    }
+    return this.amalgamationRepository.remove(dtos as Amalgamation[]);
   }
 }

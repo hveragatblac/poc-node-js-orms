@@ -14,6 +14,7 @@ export default registerAs(
       password: process.env.DATABASE_SEQUELIZE_BCS_RIESGO_PASSWORD,
       database: process.env.DATABASE_SEQUELIZE_BCS_RIESGO_DATABASE,
       // autoLoadModels: true,
+      logging: false,
       models: [User],
       dialectOptions: {
         options: {

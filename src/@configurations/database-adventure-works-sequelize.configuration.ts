@@ -14,6 +14,7 @@ export default registerAs('db-sequelize', (): SequelizeModuleOptions => {
     password: process.env.DATABASE_SEQUELIZE_PASSWORD,
     database: process.env.DATABASE_SEQUELIZE_DATABASE,
     // autoLoadModels: true,
+    logging: false,
     models: [Amalgamation, BaseUser, TransactionalOrder],
     dialectOptions: {
       options: {

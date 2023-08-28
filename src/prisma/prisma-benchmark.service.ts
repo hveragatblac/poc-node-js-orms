@@ -99,7 +99,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
         },
         generateTaskArguments: () => {
           return {
-            dto: this.stateSingleUpdate.dto,
+            dtos: this.stateSingleUpdate.dto,
             criterion: this.stateSingleUpdate.criterion,
           };
         },
@@ -130,23 +130,23 @@ export class PrismaBenchmarkService implements Benchmarkable {
         },
         generateTaskArguments: () => {
           return {
-            dto: this.stateBulkUpdate.dto,
+            dtos: this.stateBulkUpdate.dto,
             criterion: this.stateBulkUpdate.criterion,
           };
         },
         beforeTask: async () => {
-          this.stateSingleUpdate.amalgamations = random.amalgamations({
+          this.stateBulkUpdate.amalgamations = random.amalgamations({
             count: 8000,
           });
           await this.amalgamationService.saveMany(
-            this.stateSingleUpdate.amalgamations as any,
+            this.stateBulkUpdate.amalgamations as any,
           );
         },
         beforeMeasurement: () => {
-          this.stateSingleUpdate.criterion = {
-            fBit: random.item(this.stateSingleUpdate.amalgamations).fBit,
+          this.stateBulkUpdate.criterion = {
+            fBit: random.item(this.stateBulkUpdate.amalgamations).fBit,
           };
-          this.stateSingleUpdate.dto = { fDecimal: random.decimal(30, 10) };
+          this.stateBulkUpdate.dto = { fDecimal: random.decimal(30, 10) };
         },
         afterTask: async () => {
           await this.amalgamationService.deleteMany({});
@@ -175,6 +175,9 @@ export class PrismaBenchmarkService implements Benchmarkable {
             id: random.item(this.stateFirstDelete.amalgamations).id,
           };
         },
+        afterTask: async () => {
+          await this.amalgamationService.deleteMany({});
+        },
       },
       {
         name: 'Bulk delete',
@@ -194,6 +197,9 @@ export class PrismaBenchmarkService implements Benchmarkable {
           this.stateBulkDelete.criterion = {
             fBit: random.item(this.stateBulkDelete.amalgamations).fBit,
           };
+        },
+        afterTask: async () => {
+          await this.amalgamationService.deleteMany({});
         },
       },
     ];
