@@ -12,16 +12,14 @@ import { SequelizeBenchmarkService } from '../../src/sequelize/sequelize-benchma
 import { PrismaBenchmarkService } from '../../src/prisma/prisma-benchmark.service';
 import { Routine } from './types/routine.type';
 
-// type BiMap<T> = Record<string, Record<string, T>>;
-
 const targets: Type<Benchmarkable>[] = [
   PrismaBenchmarkService,
   KnexBenchmarkService,
   SequelizeBenchmarkService,
   TypeormBenchmarkService,
 ];
-// const measurementsByNameByTarget: BiMap<Measurement[]> = {};
-const repetitions = 2 ** 2;
+
+const repetitions = 2 ** 7;
 const warmupRepetitions = 2 ** 2;
 
 async function executeRoutine(
@@ -71,13 +69,10 @@ async function executeRoutine(
   for (const target of targets) {
     logger.log(`Resolving ${target.name}`);
     const instance = app.get(target);
-
     const measurementsByName = {} as Record<string, Measurement[]>;
-    // measurementsByNameByTarget[target.name] = measurementsByName;
 
     logger.log(`Resolving routines`);
     const routines = await instance.run();
-
     for (const routine of routines) {
       const measurements: Measurement[] = Array.from({
         length: repetitions,
@@ -110,7 +105,7 @@ async function executeRoutine(
         (measurement) => measurement.finishedAt - measurement.startedAt,
       );
       const distribution = new Distribution({
-        name: `${target}::${routine}`,
+        name: `${target.name}::${routine}`,
         samples: elapsedTimes,
       });
       results.push(distribution.toJson([95, 99, 99.9]));
@@ -125,30 +120,6 @@ async function executeRoutine(
       },
     );
   }
-
-  // const results: unknown[] = [];
-  // for (const [target, measurementsByName] of Object.entries(
-  //   measurementsByNameByTarget,
-  // )) {
-  //   for (const [routine, measurements] of Object.entries(measurementsByName)) {
-  //     const elapsedTimes = measurements.map(
-  //       (measurement) => measurement.finishedAt - measurement.startedAt,
-  //     );
-  //     const distribution = new Distribution({
-  //       name: `${target}::${routine}`,
-  //       samples: elapsedTimes,
-  //     });
-  //     results.push(distribution.toJson([99, 99.9]));
-  //   }
-  // }
-  //
-  // await writeFile(
-  //   `benchmark-results/measurements-${Date.now()}.json`,
-  //   JSON.stringify(results),
-  //   {
-  //     encoding: 'utf-8',
-  //   },
-  // );
 
   process.exit(0);
 })();
