@@ -10,17 +10,56 @@ import { TypeormBenchmarkService } from '../../src/typeorm/typeorm-benchmark.ser
 import { KnexBenchmarkService } from '../../src/knex/knex-benchmark.service';
 import { SequelizeBenchmarkService } from '../../src/sequelize/sequelize-benchmark.service';
 import { PrismaBenchmarkService } from '../../src/prisma/prisma-benchmark.service';
+import { Routine } from './types/routine.type';
 
 type BiMap<T> = Record<string, Record<string, T>>;
 
 const targets: Type<Benchmarkable>[] = [
-  // PrismaBenchmarkService,
+  PrismaBenchmarkService,
   // KnexBenchmarkService,
   // SequelizeBenchmarkService,
-  TypeormBenchmarkService,
+  // TypeormBenchmarkService,
 ];
 const measurementsByNameByTarget: BiMap<Measurement[]> = {};
-const repetitions = 10 ** 1;
+const repetitions = 2 ** 7;
+const warmupRepetitions = 2 ** 2;
+
+async function executeRoutine(
+  routine: Routine,
+  times: number,
+  options?: {
+    onBeforeCall: (i: number) => void;
+    onAfterCall: (i: number) => void;
+  },
+): Promise<void> {
+  if (typeof routine.beforeTask === 'function') {
+    await routine.beforeTask();
+  }
+
+  for (let i = 0; i < times; i++) {
+    if (typeof routine.beforeMeasurement === 'function') {
+      await routine.beforeMeasurement();
+    }
+
+    const taskArgs = [];
+    if (typeof routine.generateTaskArguments === 'function') {
+      const args = await routine.generateTaskArguments();
+      taskArgs.push(args);
+    }
+
+    options?.onBeforeCall(i);
+    await routine.task.call(routine, ...taskArgs);
+    options?.onAfterCall(i);
+
+    if (typeof routine.afterMeasurement === 'function') {
+      await routine.afterMeasurement();
+    }
+  }
+
+  if (typeof routine.afterTask === 'function') {
+    await routine.afterTask();
+  }
+}
 
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
@@ -45,36 +84,19 @@ const repetitions = 10 ** 1;
       }));
 
       // TODO: Add warm up
+      logger.log(`Warming up ${routine.name}`);
+      await executeRoutine(routine, warmupRepetitions);
+
       // TODO: Add resource utilization, such as CPU, Memory, Disk and Network
       logger.log(`Running ${routine.name}`);
-
-      if (typeof routine.beforeTask === 'function') {
-        await routine.beforeTask();
-      }
-
-      for (const measurement of measurements) {
-        if (typeof routine.beforeMeasurement === 'function') {
-          await routine.beforeMeasurement();
-        }
-
-        const taskArgs = [];
-        if (typeof routine.generateTaskArguments === 'function') {
-          const args = await routine.generateTaskArguments();
-          taskArgs.push(args);
-        }
-
-        measurement.startedAt = performance.now();
-        await routine.task.call(routine, ...taskArgs);
-        measurement.finishedAt = performance.now();
-
-        if (typeof routine.afterMeasurement === 'function') {
-          await routine.afterMeasurement();
-        }
-      }
-
-      if (typeof routine.afterTask === 'function') {
-        await routine.afterTask();
-      }
+      await executeRoutine(routine, measurements.length, {
+        onBeforeCall: (i) => {
+          measurements[i].startedAt = performance.now();
+        },
+        onAfterCall: (i) => {
+          measurements[i].finishedAt = performance.now();
+        },
+      });
 
       measurementsByName[routine.name] = measurements;
     }

@@ -124,7 +124,7 @@ export class SequelizeBenchmarkService implements Benchmarkable {
         },
         generateTaskArguments: () => {
           return {
-            dtos: this.stateSingleUpdate.dto,
+            dto: this.stateSingleUpdate.dto,
             criterion: this.stateSingleUpdate.criterion,
           };
         },
@@ -156,7 +156,7 @@ export class SequelizeBenchmarkService implements Benchmarkable {
         },
         generateTaskArguments: () => {
           return {
-            dtos: this.stateBulkUpdate.dto,
+            dto: this.stateBulkUpdate.dto,
             criterion: this.stateBulkUpdate.criterion,
           };
         },
