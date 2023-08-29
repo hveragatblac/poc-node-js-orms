@@ -51,6 +51,7 @@ export class TypeormBenchmarkService implements Benchmarkable {
     criterion: {} as Record<string, unknown>,
     dto: {} as Record<string, unknown>,
     amalgamations: [] as any[],
+    deletedIds: new Set<number>(),
   };
 
   private stateBulkDelete = {
@@ -163,7 +164,7 @@ export class TypeormBenchmarkService implements Benchmarkable {
         },
         beforeTask: async () => {
           this.stateBulkUpdate.amalgamations = random.amalgamations({
-            count: 8000,
+            count: 4000,
             updater: typeormAdjustAmalgamation,
           });
           await this.amalgamationService.saveMany(
@@ -194,7 +195,7 @@ export class TypeormBenchmarkService implements Benchmarkable {
         },
         beforeTask: async () => {
           this.stateFirstDelete.amalgamations = random.amalgamations({
-            count: 8000,
+            count: 4000,
             updater: typeormAdjustAmalgamation,
           });
           await this.amalgamationService.saveMany(
@@ -204,8 +205,13 @@ export class TypeormBenchmarkService implements Benchmarkable {
             await this.amalgamationService.find({});
         },
         beforeMeasurement: () => {
+          let id: number;
+          do {
+            id = random.item(this.stateFirstDelete.amalgamations).id;
+          } while (this.stateFirstDelete.deletedIds.has(id));
+          this.stateFirstDelete.deletedIds.add(id);
           this.stateFirstDelete.dto = {
-            id: random.item(this.stateFirstDelete.amalgamations).id,
+            id: id,
           };
         },
         afterTask: async () => {

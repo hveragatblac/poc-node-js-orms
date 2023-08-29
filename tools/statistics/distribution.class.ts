@@ -13,6 +13,30 @@ function powerOver(samples: number[], value: number): number[] {
   return samples.map((sample) => sample ** value);
 }
 
+function sampleSkewnessOf(n: number, differences: number[], s: number) {
+  return (
+    (n / ((n - 1) * (n - 2))) *
+    sum(
+      powerOver(
+        differences.map((difference) => difference / s),
+        3,
+      ),
+    )
+  );
+}
+
+function sampleKurtosisOf(n: number, differences: number[], s: number) {
+  return (
+    ((n * (n + 1)) / ((n - 1) * (n - 2) * (n - 3))) *
+    sum(
+      powerOver(
+        differences.map((difference) => difference / s),
+        4,
+      ),
+    )
+  );
+}
+
 function medianOf(
   samples: number[],
   options: { isSorted: boolean } = { isSorted: false },
@@ -50,15 +74,21 @@ function quartilesOf(
   const q2Midpoints = midpointsOf(sortedSamples.length);
   const q2 = medianOf(sortedSamples, { isSorted: true });
 
-  const q1Samples = sortedSamples.slice(0, q2Midpoints[0]);
+  const lowerHalfEnd = q2Midpoints[0] + (q2Midpoints.length === 1 ? 0 : 1);
+  const upperHalfStart = lowerHalfEnd + (q2Midpoints.length === 1 ? 1 : 0);
+
+  const q1Samples = sortedSamples.slice(0, lowerHalfEnd);
   const q1 = medianOf(q1Samples, { isSorted: true });
 
-  const q3Samples = sortedSamples.slice(q2Midpoints[1] + 1);
+  const q3Samples = sortedSamples.slice(upperHalfStart);
   const q3 = medianOf(q3Samples, { isSorted: true });
 
   return [q1, q2, q3];
 }
 
+/**
+ * Sample statistics (not implemented for populations)
+ */
 export class Distribution {
   private readonly differences: number[];
   private readonly total: number;
@@ -95,21 +125,22 @@ export class Distribution {
     const { samples, name } = args;
     this.total = sum(samples);
 
-    // TODO: Revisar https://www.calculatorsoup.com/calculators/statistics/descriptivestatistics.php
-    //  this are descriptive stats for a population but I think I should use the sample method
-    //  to reduce bias, (ALSO VALIDATE kurtosis and skewness of RiskMetrics)
     this.name = name;
     this.samples = samples;
     this.mean = this.total / samples.length;
     this.differences = subtractOver(samples, this.mean);
-    this.variance = sum(powerOver(this.differences, 2)) / samples.length;
+    this.variance = sum(powerOver(this.differences, 2)) / (samples.length - 1);
     this.standardDeviation = Math.sqrt(this.variance);
-    this.skewness =
-      sum(powerOver(this.differences, 3)) /
-      (samples.length * this.standardDeviation ** 3);
-    this.kurtosis =
-      sum(powerOver(this.differences, 4)) /
-      (samples.length * this.standardDeviation ** 4);
+    this.skewness = sampleSkewnessOf(
+      samples.length,
+      this.differences,
+      this.standardDeviation,
+    );
+    this.kurtosis = sampleKurtosisOf(
+      samples.length,
+      this.differences,
+      this.standardDeviation,
+    );
 
     this.ascendingSamples = [...samples].sort((f, s) => f - s);
     this.descendingSamples = [...samples].sort((f, s) => s - f);

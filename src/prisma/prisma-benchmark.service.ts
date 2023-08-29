@@ -26,6 +26,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
   private stateFirstDelete = {
     criterion: {} as Record<string, unknown>,
     amalgamations: [] as any[],
+    deletedIds: new Set<number>(),
   };
 
   private stateBulkDelete = {
@@ -136,7 +137,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
         },
         beforeTask: async () => {
           this.stateBulkUpdate.amalgamations = random.amalgamations({
-            count: 8000,
+            count: 4000,
           });
           await this.amalgamationService.saveMany(
             this.stateBulkUpdate.amalgamations as any,
@@ -162,7 +163,7 @@ export class PrismaBenchmarkService implements Benchmarkable {
         },
         beforeTask: async () => {
           this.stateFirstDelete.amalgamations = random.amalgamations({
-            count: 8000,
+            count: 4000,
           });
           await this.amalgamationService.saveMany(
             this.stateFirstDelete.amalgamations as any,
@@ -171,8 +172,13 @@ export class PrismaBenchmarkService implements Benchmarkable {
             await this.amalgamationService.find({});
         },
         beforeMeasurement: () => {
+          let id: number;
+          do {
+            id = random.item(this.stateFirstDelete.amalgamations).id;
+          } while (this.stateFirstDelete.deletedIds.has(id));
+          this.stateFirstDelete.deletedIds.add(id);
           this.stateFirstDelete.criterion = {
-            id: random.item(this.stateFirstDelete.amalgamations).id,
+            id: id,
           };
         },
         afterTask: async () => {

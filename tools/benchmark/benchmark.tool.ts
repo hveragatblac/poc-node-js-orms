@@ -3,7 +3,7 @@ import { AppModule } from '../../src/app.module';
 import { Logger, Type } from '@nestjs/common';
 import { Benchmarkable } from './types/benchmarkable.type';
 import { Measurement } from './types/measurement.type';
-import { writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { Distribution } from '../statistics/distribution.class';
 import * as process from 'node:process';
 import { TypeormBenchmarkService } from '../../src/typeorm/typeorm-benchmark.service';
@@ -12,16 +12,16 @@ import { SequelizeBenchmarkService } from '../../src/sequelize/sequelize-benchma
 import { PrismaBenchmarkService } from '../../src/prisma/prisma-benchmark.service';
 import { Routine } from './types/routine.type';
 
-type BiMap<T> = Record<string, Record<string, T>>;
+// type BiMap<T> = Record<string, Record<string, T>>;
 
 const targets: Type<Benchmarkable>[] = [
   PrismaBenchmarkService,
-  // KnexBenchmarkService,
-  // SequelizeBenchmarkService,
-  // TypeormBenchmarkService,
+  KnexBenchmarkService,
+  SequelizeBenchmarkService,
+  TypeormBenchmarkService,
 ];
-const measurementsByNameByTarget: BiMap<Measurement[]> = {};
-const repetitions = 2 ** 7;
+// const measurementsByNameByTarget: BiMap<Measurement[]> = {};
+const repetitions = 2 ** 2;
 const warmupRepetitions = 2 ** 2;
 
 async function executeRoutine(
@@ -64,13 +64,16 @@ async function executeRoutine(
 (async () => {
   const app = await NestFactory.createApplicationContext(AppModule);
   const logger = new Logger('Benchmark');
+  const timestamp = Date.now();
+  const benchmarkPath = `benchmark-results/${timestamp}`;
+  await mkdir(benchmarkPath, { recursive: true });
 
   for (const target of targets) {
     logger.log(`Resolving ${target.name}`);
     const instance = app.get(target);
 
     const measurementsByName = {} as Record<string, Measurement[]>;
-    measurementsByNameByTarget[target.name] = measurementsByName;
+    // measurementsByNameByTarget[target.name] = measurementsByName;
 
     logger.log(`Resolving routines`);
     const routines = await instance.run();
@@ -83,7 +86,6 @@ async function executeRoutine(
         finishedAt: 0,
       }));
 
-      // TODO: Add warm up
       logger.log(`Warming up ${routine.name}`);
       await executeRoutine(routine, warmupRepetitions);
 
@@ -100,12 +102,9 @@ async function executeRoutine(
 
       measurementsByName[routine.name] = measurements;
     }
-  }
 
-  const results: unknown[] = [];
-  for (const [target, measurementsByName] of Object.entries(
-    measurementsByNameByTarget,
-  )) {
+    logger.log(`Computings statistics of ${target.name}`);
+    const results: unknown[] = [];
     for (const [routine, measurements] of Object.entries(measurementsByName)) {
       const elapsedTimes = measurements.map(
         (measurement) => measurement.finishedAt - measurement.startedAt,
@@ -114,17 +113,42 @@ async function executeRoutine(
         name: `${target}::${routine}`,
         samples: elapsedTimes,
       });
-      results.push(distribution.toJson([99, 99.9]));
+      results.push(distribution.toJson([95, 99, 99.9]));
     }
+
+    logger.log(`Dumping statistics of ${target.name} as JSON`);
+    await writeFile(
+      `${benchmarkPath}/${target.name}.json`,
+      JSON.stringify(results),
+      {
+        encoding: 'utf-8',
+      },
+    );
   }
 
-  await writeFile(
-    `benchmark-results/measurements-${Date.now()}.json`,
-    JSON.stringify(results),
-    {
-      encoding: 'utf-8',
-    },
-  );
+  // const results: unknown[] = [];
+  // for (const [target, measurementsByName] of Object.entries(
+  //   measurementsByNameByTarget,
+  // )) {
+  //   for (const [routine, measurements] of Object.entries(measurementsByName)) {
+  //     const elapsedTimes = measurements.map(
+  //       (measurement) => measurement.finishedAt - measurement.startedAt,
+  //     );
+  //     const distribution = new Distribution({
+  //       name: `${target}::${routine}`,
+  //       samples: elapsedTimes,
+  //     });
+  //     results.push(distribution.toJson([99, 99.9]));
+  //   }
+  // }
+  //
+  // await writeFile(
+  //   `benchmark-results/measurements-${Date.now()}.json`,
+  //   JSON.stringify(results),
+  //   {
+  //     encoding: 'utf-8',
+  //   },
+  // );
 
   process.exit(0);
 })();
