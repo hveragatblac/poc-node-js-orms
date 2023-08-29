@@ -11,6 +11,13 @@ import { KnexBenchmarkService } from '../../src/knex/knex-benchmark.service';
 import { SequelizeBenchmarkService } from '../../src/sequelize/sequelize-benchmark.service';
 import { PrismaBenchmarkService } from '../../src/prisma/prisma-benchmark.service';
 import { Routine } from './types/routine.type';
+import * as v8 from 'node:v8';
+
+const MAX_ALLOWED_HEAP = v8.getHeapStatistics().heap_size_limit / 2 ** 20;
+if (MAX_ALLOWED_HEAP < 10240) {
+  console.log({ MAX_ALLOWED_HEAP });
+  process.exit(0);
+}
 
 const targets: Type<Benchmarkable>[] = [
   PrismaBenchmarkService,
