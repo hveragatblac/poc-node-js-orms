@@ -1,0 +1,151 @@
+<div class="xl:container mx-auto pt-4 h-screen">
+    <div class="flex flex-col h-full">
+        <form class="flex h-16 justify-end gap-4 items-start">
+            <mat-form-field class="w-64 h-16">
+                <mat-label>Benchmark group</mat-label>
+                <input matInput type="text" name="inputBenchmarkGroup" [(ngModel)]="benchmarkGroupName">
+            </mat-form-field>
+            <input #fileInput hidden type="file" onclick="this.value=null" (change)="onFileInputChange($event)"
+                   accept=".json" multiple/>
+            <button
+                mat-flat-button
+                color="primary"
+                (click)="fileInput.click()"
+                class=""
+            >
+                Load benchmarks
+            </button>
+        </form>
+        <mat-divider class="my-4"></mat-divider>
+        <div class="grow">
+            <div class="grid grid-cols-12 h-full">
+                <div class="col-span-3 border-r border-solid">
+                    <mat-tree [treeControl]="nav.control" [dataSource]="nav.dataSource" class="nav-tree">
+                        <mat-tree-node
+                            *matTreeNodeDef="let node;"
+                            matTreeNodeToggle
+                            (click)="onNavClick(node)"
+                        >
+                            {{node.name}}
+                        </mat-tree-node>
+                        <mat-nested-tree-node
+                            *matTreeNodeDef="let node; when: hasChild"
+                        >
+                            <div class="mat-tree-node">
+                                <button mat-icon-button matTreeNodeToggle>
+                                    <mat-icon>
+                                        {{nav.control.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
+                                    </mat-icon>
+                                </button>
+                                {{node.name}}
+                            </div>
+                            <div [class.hidden]="!nav.control.isExpanded(node)" role="group">
+                                <ng-container matTreeNodeOutlet></ng-container>
+                            </div>
+                        </mat-nested-tree-node>
+                    </mat-tree>
+                </div>
+                <div class="col-span-9 px-8 py-8">
+                    <ng-container [ngSwitch]="mode">
+                        <ng-container
+                            *ngSwitchCase="'single'"
+                        >
+                            <div class="flex flex-col w-128 text-lg mb-4">
+                                <div class="grid grid-cols-12">
+                                    <div class="col-span-12 text-xl text-bold mb-4">
+                                        Parámetros
+                                    </div>
+                                    <div class="col-span-4 grid grid-cols-12">
+                                        <div class="col-span-9">Mediana</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.median)}}</div>
+                                        <div class="col-span-9">Mínima</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.minimum)}}</div>
+                                        <div class="col-span-9">Máxima</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.maximum)}}</div>
+                                        <div class="col-span-9">Cuartil 1</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.quartiles[0])}}</div>
+                                        <div class="col-span-9">Cuartil 2</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.quartiles[1])}}</div>
+                                        <div class="col-span-9">Cuartil 3</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.quartiles[2])}}</div>
+                                    </div>
+                                    <div class="col-span-1"></div>
+                                    <div class="col-span-4 grid grid-cols-12">
+                                        <div class="col-span-9">Media</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.mean)}}</div>
+                                        <div class="col-span-9">Varianza</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.variance)}}</div>
+                                        <div class="col-span-9">Desviación estándar</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics.standardDeviation)}}</div>
+                                        <div class="col-span-9">5.0% más alto</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics['percentile-95.00'].value)}}</div>
+                                        <div class="col-span-9">1.0% más alto</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics['percentile-99.00'].value)}}</div>
+                                        <div class="col-span-9">0.1% más alto</div>
+                                        <div class="col-span-3 text-right">{{num(single.statistics['percentile-99.90'].value)}}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <apx-chart
+                                    [series]="single.chronologicalSeries"
+                                    [chart]="single.chart"
+                                    [xaxis]="single.xaxis"
+                                    [yaxis]="single.yaxis"
+                                    [title]="{ text: 'Chronological' }"
+                                    [dataLabels]="single.dataLabels"
+                                    [legend]="single.legend"
+                                ></apx-chart>
+                            </div>
+                            <div>
+                                <apx-chart
+                                    [series]="single.ascendantSeries"
+                                    [chart]="single.chart"
+                                    [xaxis]="single.xaxis"
+                                    [yaxis]="single.yaxis"
+                                    [title]="{ text: 'Ascendant' }"
+                                    [dataLabels]="single.dataLabels"
+                                    [legend]="single.legend"
+                                ></apx-chart>
+                            </div>
+                        </ng-container>
+                        <ng-container
+                            *ngSwitchCase="'summary'"
+                        >
+                            <div class="flex flex-col w-128 text-lg mb-4">
+                                <div class="grid grid-cols-12">
+                                    <div class="col-span-12 text-xl text-bold mb-4">
+                                        Total execution time % with respect to slowest (lower is better)
+                                    </div>
+                                    <div class="col-span-4 grid grid-cols-12">
+                                        <ng-container *ngFor="let aggregated of summary.percents">
+                                            <div class="col-span-9">{{aggregated.library}}</div>
+                                            <div class="col-span-3 text-right">{{num(aggregated.percent)}}%</div>
+                                        </ng-container>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <apx-chart
+                                    [series]="summary.series"
+                                    [chart]="summary.chart"
+                                    [xaxis]="summary.xaxis"
+                                    [yaxis]="summary.yaxis"
+                                    [title]="summary.title"
+                                    [dataLabels]="summary.dataLabels"
+                                    [legend]="summary.legend"
+                                ></apx-chart>
+                            </div>
+                        </ng-container>
+                        <ng-container
+                            *ngSwitchDefault
+                        >
+                        </ng-container>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
